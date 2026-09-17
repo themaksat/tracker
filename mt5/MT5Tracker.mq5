@@ -2,8 +2,8 @@
 #property version   "1.00"
 #property description "MT5 -> PostgreSQL Tracker bridge through your own Node.js API"
 
-input string ApiUrl       = "https://YOUR-API-DOMAIN.com/api/mt5/ingest";
-input string TrackerToken = "PASTE_TRACKER_TOKEN_HERE";
+input string ApiUrl       = "https://tracker-76gq.onrender.com/api/mt5/ingest";
+input string TrackerToken = "mt5t_7c40ed733fd7664eb88b2c0a19a2f83e87895d87d98315e8627c89fc1a0e2f88";
 input int    SyncSeconds  = 15;
 input int    HistoryDays  = 30;
 
