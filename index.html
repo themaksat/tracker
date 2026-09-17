@@ -42,7 +42,7 @@ h1{font-size:20px;margin:0}.muted{color:var(--m);font-size:12px}.btn,input,selec
   <div class="top">
     <div>
       <h1>MT5 PostgreSQL Tracker</h1>
-      <div class="muted">Plain PostgreSQL + Node.js API + MT5 EA</div>
+      <div class="muted">Connected to: <span id="topApiDisplay" style="color:var(--g)"></span></div>
     </div>
     <div class="row">
       <select id="accountSelect"></select>
@@ -93,7 +93,10 @@ h1{font-size:20px;margin:0}.muted{color:var(--m);font-size:12px}.btn,input,selec
 <script>
 function getApiBase() {
   const stored = localStorage.getItem("mt5_api_base");
-  if (stored) return stored.replace(/\/$/, "");
+  if (stored && !stored.includes("trycloudflare.com")) {
+    return stored.replace(/\/$/, "");
+  }
+  localStorage.removeItem("mt5_api_base");
   if (!window.location.origin.includes("github.io") && window.location.protocol.startsWith("http")) {
     return window.location.origin;
   }
@@ -105,11 +108,13 @@ let API_BASE = getApiBase();
 function updateApiDisplay() {
   const disp = $("currentApiDisplay");
   if (disp) disp.textContent = API_BASE || "Not configured (Click to set)";
+  const topDisp = $("topApiDisplay");
+  if (topDisp) topDisp.textContent = API_BASE || "Not configured";
 }
 
 function promptApiUrl() {
   const current = API_BASE || "";
-  const input = prompt("Enter your MT5 Tracker Backend API URL:\n(e.g., https://your-tunnel.trycloudflare.com or http://localhost:3000)", current);
+  const input = prompt("Enter your MT5 Tracker Backend API URL:\n(e.g., https://tracker-76gq.onrender.com)", current);
   if (input !== null) {
     const cleaned = input.trim().replace(/\/$/, "");
     if (cleaned) {
@@ -138,10 +143,22 @@ async function api(path, options={}){
     promptApiUrl();
     if (!API_BASE) throw new Error("Backend API URL is required. Click ⚙️ API URL to set it.");
   }
-  const res = await fetch(API_BASE + path, options);
-  const data = await res.json().catch(()=>({}));
-  if(!res.ok) throw new Error(data.error || "Request failed");
-  return data;
+  try {
+    const res = await fetch(API_BASE + path, options);
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) {
+      if(res.status === 401 && token && !path.includes("/api/auth/")) {
+        logout();
+      }
+      throw new Error(data.error || "Request failed (" + res.status + ")");
+    }
+    return data;
+  } catch (err) {
+    if (err.name === "TypeError" && err.message.includes("fetch")) {
+      throw new Error("Cannot reach backend server. If Render was asleep, please wait 30s and click Refresh.");
+    }
+    throw err;
+  }
 }
 
 async function login(register=false){
