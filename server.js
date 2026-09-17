@@ -367,7 +367,7 @@ app.get("/api/accounts/:id/dashboard", requireAuth, async (req, res) => {
     const accountId = Number(req.params.id);
 
     const owner = await pool.query(
-      `SELECT id,name,broker,mt5_login,currency
+      `SELECT id,name,broker,server,mt5_login,currency
        FROM trading_accounts
        WHERE id=$1 AND user_id=$2`,
       [accountId, req.user.userId]
@@ -423,7 +423,7 @@ app.post("/api/mt5/ingest", async (req, res) => {
     await client.query("BEGIN");
 
     const accResult = await client.query(
-      `SELECT id FROM trading_accounts WHERE tracker_token_hash=$1`,
+      `SELECT id, user_id FROM trading_accounts WHERE tracker_token_hash=$1`,
       [tokenHash]
     );
 
@@ -432,10 +432,22 @@ app.post("/api/mt5/ingest", async (req, res) => {
       return res.status(401).json({ error: "Invalid tracker token." });
     }
 
-    const accountId = accResult.rows[0].id;
+    const userId = accResult.rows[0].user_id;
+    let accountId = accResult.rows[0].id;
     const account = req.body.account || {};
     const snapshot = req.body.snapshot || {};
     const trades = Array.isArray(req.body.trades) ? req.body.trades : [];
+
+    // If payload specifies a login, route to that user's matching account
+    if (account.login) {
+      const match = await client.query(
+        `SELECT id FROM trading_accounts WHERE user_id=$1 AND mt5_login=$2`,
+        [userId, Number(account.login)]
+      );
+      if (match.rows.length) {
+        accountId = match.rows[0].id;
+      }
+    }
 
     await client.query(
       `UPDATE trading_accounts

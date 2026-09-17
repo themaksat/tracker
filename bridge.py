@@ -13,16 +13,15 @@ TARGET_URLS = [
 ]
 
 
-def sync_once():
-    if not mt5.initialize():
-        print('[Bridge] MT5 initialize failed')
-        return False
+SYNC_TARGETS_URL = 'https://tracker-76gq.onrender.com/api/mt5/sync-targets'
 
+last_secondary_sync = 0
+
+
+def fetch_account_payload():
     acc = mt5.account_info()
     if not acc:
-        print('[Bridge] Failed to get account info')
-        mt5.shutdown()
-        return False
+        return None
 
     acc_dict = acc._asdict()
     login = acc_dict.get('login', 0)
@@ -33,9 +32,10 @@ def sync_once():
     profit = acc_dict.get('profit', 0.0)
     margin = acc_dict.get('margin', 0.0)
     margin_free = acc_dict.get('margin_free', 0.0)
+    server = acc_dict.get('server', company)
 
-    # Fetch last 30 days deals
-    from_date = datetime.now(timezone.utc) - timedelta(days=30)
+    # Look back 90 days to capture all closed deals
+    from_date = datetime.now(timezone.utc) - timedelta(days=90)
     deals = mt5.history_deals_get(from_date, datetime.now(timezone.utc)) or []
 
     pos_entries = {}
@@ -56,10 +56,11 @@ def sync_once():
         if entry == 1:
             pid = dd.get('position_id', 0)
             in_deal = pos_entries.get(pid, {})
-            entry_price = in_deal.get('price', 0.0)
+            entry_price = in_deal.get('price', dd.get('price', 0.0))
             open_time_dt = datetime.fromtimestamp(in_deal.get('time', dd.get('time')), timezone.utc)
             close_time_dt = datetime.fromtimestamp(dd.get('time'), timezone.utc)
 
+            # In MT5 out deal, DEAL_TYPE_SELL (1) closes a BUY position; DEAL_TYPE_BUY (0) closes a SELL position
             side = 'BUY' if dtype == 1 else 'SELL'
             reason = dd.get('reason', 0)
             reason_map = {0: 'CLIENT', 1: 'MOBILE', 2: 'WEB', 3: 'EXPERT', 4: 'SL', 5: 'TP', 6: 'SO'}
@@ -87,18 +88,16 @@ def sync_once():
                 'close_reason': close_reason
             })
 
-    mt5.shutdown()
+    # Sort by close time descending and send up to 1000 deals
+    trades_payload.sort(key=lambda t: t.get('close_time', ''), reverse=True)
 
-    server = acc_dict.get('server', '')
-
-    payload = {
+    return {
         'account': {
             'broker': company,
             'server': server,
             'login': login,
             'currency': currency
         },
-
         'snapshot': {
             'balance': balance,
             'equity': equity,
@@ -106,9 +105,12 @@ def sync_once():
             'margin': margin,
             'free_margin': margin_free
         },
-        'trades': trades_payload[-150:]
+        'trades': trades_payload[:1000]
     }
 
+
+def send_payload(payload):
+    login = payload.get('account', {}).get('login', 0)
     data_bytes = json.dumps(payload).encode('utf-8')
 
     token_to_use = TRACKER_TOKEN
@@ -119,7 +121,6 @@ def sync_once():
                 token_to_use = cfg.get('accounts', {}).get(str(login)) or cfg.get('default_token') or TRACKER_TOKEN
         except Exception as ce:
             print(f'[Bridge] Error reading {CONFIG_PATH}: {ce}')
-
 
     for url in TARGET_URLS:
         req = urllib.request.Request(
@@ -133,18 +134,77 @@ def sync_once():
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:
                 body = resp.read().decode('utf-8')
-                print(f'[Bridge] Successfully synced account {login} to {url}: {body}')
+                trades_count = len(payload.get('trades', []))
+                print(f'[Bridge] Successfully synced account {login} ({trades_count} deals) to {url}: {body}')
         except Exception as e:
             print(f'[Bridge] Error posting to {url}: {e}')
 
 
+def get_sync_targets():
     try:
-        with open("bridge.log", "w") as f:
-            f.write(f"Last sync: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')} - OK (Synced {len(trades_payload[-150:])} trades)\n")
-    except Exception:
-        pass
+        req = urllib.request.Request(
+            SYNC_TARGETS_URL,
+            headers={'x-tracker-token': TRACKER_TOKEN}
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return json.loads(resp.read().decode('utf-8'))
+    except Exception as e:
+        return []
 
+
+def sync_once():
+    global last_secondary_sync
+    if not mt5.initialize():
+        print('[Bridge] MT5 initialize failed')
+        return False
+
+    acc = mt5.account_info()
+    if not acc:
+        print('[Bridge] Failed to get account info')
+        mt5.shutdown()
+        return False
+
+    primary_login = acc.login
+    primary_server = acc._asdict().get('server', '')
+
+    # 1. Sync currently active account in terminal
+    payload = fetch_account_payload()
+    if payload:
+        send_payload(payload)
+        trades_count = len(payload.get('trades', []))
+        try:
+            with open("bridge.log", "w") as f:
+                f.write(f"Last sync: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')} - OK (Synced {trades_count} trades for #{primary_login})\n")
+        except Exception:
+            pass
+
+    # 2. Periodically check and sync secondary accounts (every 5 minutes)
+    now = time.time()
+    if now - last_secondary_sync > 300:
+        last_secondary_sync = now
+        targets = get_sync_targets()
+        for t in targets:
+            try:
+                target_login = int(t.get('login') or 0)
+                password = t.get('password')
+                server = t.get('server')
+                if target_login and target_login != primary_login and password and server:
+                    print(f'[Bridge] Syncing secondary account #{target_login} ({server})...')
+                    if mt5.login(target_login, password=password, server=server):
+                        time.sleep(1)
+                        sec_payload = fetch_account_payload()
+                        if sec_payload:
+                            send_payload(sec_payload)
+            except Exception as te:
+                print(f'[Bridge] Error syncing secondary account {t}: {te}')
+
+        # Always switch back to user's primary active terminal
+        if mt5.account_info() and mt5.account_info().login != primary_login:
+            mt5.login(primary_login, server=primary_server)
+
+    mt5.shutdown()
     return True
+
 
 if __name__ == '__main__':
     print('[Bridge] Starting MT5 auto-sync bridge daemon...', flush=True)
