@@ -110,11 +110,12 @@ def sync_once():
     token_to_use = TRACKER_TOKEN
     if os.path.exists(CONFIG_PATH):
         try:
-            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            with open(CONFIG_PATH, 'r', encoding='utf-8-sig') as f:
                 cfg = json.load(f)
                 token_to_use = cfg.get('accounts', {}).get(str(login)) or cfg.get('default_token') or TRACKER_TOKEN
         except Exception as ce:
             print(f'[Bridge] Error reading {CONFIG_PATH}: {ce}')
+
 
     for url in TARGET_URLS:
         req = urllib.request.Request(
