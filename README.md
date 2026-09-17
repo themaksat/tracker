@@ -1,17 +1,22 @@
-# MT5 Tracker — Plain PostgreSQL Version
+# MT5 Tracker — 24/7 Cloud Version
 
-This version uses **no Supabase**.
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/themaksat/tracker)
+
+Live Dashboard: **[https://themaksat.github.io/tracker/](https://themaksat.github.io/tracker/)**
+
+### 🌐 24/7 Cloud Hosting (No Laptop Needed)
+Click the **Deploy to Render** button above to automatically launch a free cloud PostgreSQL database and Node.js API that runs 24/7 in the cloud.
 
 Architecture:
 
 ```
-MT5 terminal
-   ↓ HTTPS
-Node.js / Express API
+MT5 terminal (VPS or Laptop)
+   ↓ HTTPS WebRequest
+Cloud Node.js / Express API (Render / Railway)
    ↓
-PostgreSQL
+Cloud PostgreSQL
    ↑
-GitHub Pages dashboard
+GitHub Pages dashboard (https://themaksat.github.io/tracker/)
 ```
 
 ## 1. Create PostgreSQL database

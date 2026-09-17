@@ -8,6 +8,7 @@ const crypto = require("crypto");
 const { Pool } = require("pg");
 
 const path = require("path");
+const fs = require("fs");
 const app = express();
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
@@ -353,8 +354,23 @@ app.post("/api/mt5/ingest", async (req, res) => {
   }
 });
 
+async function initDb() {
+  try {
+    const schemaPath = path.join(__dirname, "schema.sql");
+    if (fs.existsSync(schemaPath)) {
+      const schemaSql = fs.readFileSync(schemaPath, "utf8");
+      await pool.query(schemaSql);
+      console.log("Database schema applied/verified successfully.");
+    }
+  } catch (err) {
+    console.error("Warning: DB schema init failed:", err.message);
+  }
+}
+
 const port = Number(process.env.PORT || 3000);
 
-app.listen(port, () => {
-  console.log(`MT5 tracker API listening on port ${port}`);
+initDb().then(() => {
+  app.listen(port, () => {
+    console.log(`MT5 tracker API listening on port ${port}`);
+  });
 });
