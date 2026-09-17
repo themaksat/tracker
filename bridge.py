@@ -34,9 +34,10 @@ def fetch_account_payload():
     margin_free = acc_dict.get('margin_free', 0.0)
     server = acc_dict.get('server', company)
 
-    # Look back 90 days to capture all closed deals
+    # Look back 90 days to capture all closed deals and orders
     from_date = datetime.now(timezone.utc) - timedelta(days=90)
     deals = mt5.history_deals_get(from_date, datetime.now(timezone.utc)) or []
+    orders = mt5.history_orders_get(from_date, datetime.now(timezone.utc)) or []
 
     pos_entries = {}
     for d in deals:
@@ -45,6 +46,17 @@ def fetch_account_payload():
         entry = dd.get('entry')
         if pid and entry in (0, 2):
             pos_entries[pid] = dd
+
+    pos_sl_tp = {}
+    for o in orders:
+        od = o._asdict()
+        pid = od.get('position_id')
+        if pid:
+            sl = float(od.get('sl', 0) or 0)
+            tp = float(od.get('tp', 0) or 0)
+            if sl > 0 or tp > 0:
+                if pid not in pos_sl_tp or (sl > 0 and pos_sl_tp[pid]['sl'] == 0):
+                    pos_sl_tp[pid] = {'sl': sl, 'tp': tp}
 
     trades_payload = []
     for d in deals:
@@ -56,7 +68,7 @@ def fetch_account_payload():
         if entry == 1:
             pid = dd.get('position_id', 0)
             in_deal = pos_entries.get(pid, {})
-            entry_price = in_deal.get('price', dd.get('price', 0.0))
+            entry_price = float(in_deal.get('price', dd.get('price', 0.0)))
             open_time_dt = datetime.fromtimestamp(in_deal.get('time', dd.get('time')), timezone.utc)
             close_time_dt = datetime.fromtimestamp(dd.get('time'), timezone.utc)
 
@@ -66,6 +78,21 @@ def fetch_account_payload():
             reason_map = {0: 'CLIENT', 1: 'MOBILE', 2: 'WEB', 3: 'EXPERT', 4: 'SL', 5: 'TP', 6: 'SO'}
             close_reason = reason_map.get(reason, 'MANUAL')
 
+            exit_price = float(dd.get('price', 0))
+            sltp = pos_sl_tp.get(pid, {})
+            sl = float(sltp.get('sl', 0.0))
+            tp = float(sltp.get('tp', 0.0))
+
+            # Calculate individual trade R:R if SL was defined
+            rr = 0.0
+            if sl > 0 and entry_price > 0:
+                if side == 'BUY' and entry_price > sl:
+                    risk = entry_price - sl
+                    rr = round((exit_price - entry_price) / risk, 2)
+                elif side == 'SELL' and sl > entry_price:
+                    risk = sl - entry_price
+                    rr = round((entry_price - exit_price) / risk, 2)
+
             trades_payload.append({
                 'ticket': dd.get('ticket'),
                 'position_id': pid,
@@ -74,11 +101,11 @@ def fetch_account_payload():
                 'symbol': dd.get('symbol', ''),
                 'side': side,
                 'volume': float(dd.get('volume', 0)),
-                'entry_price': float(entry_price),
-                'exit_price': float(dd.get('price', 0)),
-                'sl': 0.0,
-                'tp': 0.0,
-                'rr': 0.0,
+                'entry_price': entry_price,
+                'exit_price': exit_price,
+                'sl': sl,
+                'tp': tp,
+                'rr': rr,
                 'profit': float(dd.get('profit', 0)),
                 'commission': float(dd.get('commission', 0)),
                 'swap': float(dd.get('swap', 0)),

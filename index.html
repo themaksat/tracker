@@ -137,7 +137,7 @@ select.account-select option{background:#0e1320;color:#fff}
 
 /* Metrics Grid (Apple Cards) */
 .metrics-grid{
-  display:grid;grid-template-columns:repeat(6,1fr);
+  display:grid;grid-template-columns:repeat(7,1fr);
   gap:10px;margin-bottom:14px;
 }
 .metric-card{
@@ -160,6 +160,7 @@ select.account-select option{background:#0e1320;color:#fff}
 .val-green{color:var(--apple-green)}
 .val-red{color:var(--apple-red)}
 .val-blue{color:var(--apple-blue)}
+.val-amber{color:var(--apple-amber)}
 
 /* Main Content Grid */
 .main-grid{
@@ -283,7 +284,11 @@ input:focus,select.apple-input:focus{
 .grow{flex:1}
 
 /* Responsive Breakpoints (iPhone, Android, Tablet, Desktop) */
-@media (max-width:1024px){
+@media (max-width:1180px){
+  .metrics-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+@media (max-width:880px){
   .metrics-grid{grid-template-columns:repeat(3,1fr)}
   .main-grid{grid-template-columns:1fr}
 }
@@ -298,6 +303,7 @@ input:focus,select.apple-input:focus{
   .glass{padding:14px;border-radius:18px}
   .header-actions .btn{min-height:36px;padding:6px 10px}
   .metrics-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .metrics-grid .metric-card:last-child{grid-column:span 2}
   .metric-card{padding:12px 14px;border-radius:14px}
   .metric-value{font-size:18px}
   .chart-container{height:210px}
@@ -401,6 +407,10 @@ input:focus,select.apple-input:focus{
       <div class="metric-card">
         <div class="metric-label">Profit Factor</div>
         <div class="metric-value" id="profitFactor">0.00</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg R:R</div>
+        <div class="metric-value val-amber" id="avgRR">1 : 0.00</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Closed Deals</div>
@@ -981,8 +991,27 @@ function render(data){
   const losses = trades.filter(t => net(t) < 0);
   const gp = wins.reduce((sum, t) => sum + net(t), 0);
   const gl = Math.abs(losses.reduce((sum, t) => sum + net(t), 0));
+  const avgWin = wins.length ? (gp / wins.length) : 0;
+  const avgLoss = losses.length ? (gl / losses.length) : 0;
+
   $("winRate").textContent = (trades.length ? (wins.length / trades.length * 100) : 0).toFixed(1) + "%";
   $("profitFactor").textContent = gl ? (gp / gl).toFixed(2) : (gp > 0 ? "∞" : "0.00");
+
+  let avgRRText = "1 : 0.00";
+  let avgRRClass = "";
+  if (avgLoss > 0) {
+    const ratio = (avgWin / avgLoss).toFixed(2);
+    avgRRText = "1 : " + ratio;
+    avgRRClass = (avgWin / avgLoss) >= 1.0 ? "val-green" : "val-amber";
+  } else if (avgWin > 0) {
+    avgRRText = "1 : ∞";
+    avgRRClass = "val-green";
+  } else {
+    avgRRText = "1 : 0.00";
+  }
+  $("avgRR").textContent = avgRRText;
+  $("avgRR").className = "metric-value " + avgRRClass;
+
   $("tradeCount").textContent = trades.length;
   $("chartTradesCount").textContent = trades.length ? (trades.length + " closed deals") : "0 closed deals";
 
@@ -1063,6 +1092,8 @@ function renderEmpty(){
   $("todayPnl").textContent = "$0.00";
   $("winRate").textContent = "0.0%";
   $("profitFactor").textContent = "0.00";
+  $("avgRR").textContent = "1 : 0.00";
+  $("avgRR").className = "metric-value";
   $("tradeCount").textContent = "0";
   $("chartTradesCount").textContent = "";
   $("tbody").innerHTML = `
