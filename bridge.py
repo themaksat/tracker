@@ -89,12 +89,16 @@ def sync_once():
 
     mt5.shutdown()
 
+    server = acc_dict.get('server', '')
+
     payload = {
         'account': {
             'broker': company,
+            'server': server,
             'login': login,
             'currency': currency
         },
+
         'snapshot': {
             'balance': balance,
             'equity': equity,

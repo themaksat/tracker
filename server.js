@@ -155,7 +155,7 @@ app.post("/api/auth/login", async (req, res) => {
 app.get("/api/accounts", requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT a.id, a.name, a.broker, a.mt5_login, a.currency, a.created_at,
+      `SELECT a.id, a.name, a.broker, a.server, a.mt5_login, a.currency, a.created_at,
               s.balance, s.equity, s.updated_at AS last_sync
        FROM trading_accounts a
        LEFT JOIN LATERAL (
@@ -241,8 +241,128 @@ app.post("/api/accounts/:id/regenerate-token", requireAuth, async (req, res) => 
   }
 });
 
+app.post("/api/accounts/connect-credentials", requireAuth, async (req, res) => {
+  try {
+    const login = Number(req.body.login);
+    const server = String(req.body.server || "").trim();
+    const password = String(req.body.password || "").trim();
+    const nickname = String(req.body.name || "").trim();
+    const name = nickname || (server ? `${server} #${login}` : `Account #${login}`);
+
+    if (!login || isNaN(login)) {
+      return res.status(400).json({ error: "Please enter a valid numeric MT5 Account / Login ID." });
+    }
+
+    const existing = await pool.query(
+      `SELECT id, name, broker, server, mt5_login
+       FROM trading_accounts
+       WHERE user_id = $1 AND mt5_login = $2`,
+      [req.user.userId, login]
+    );
+
+    let account;
+    let token = newTrackerToken();
+    const tokenHash = hashTrackerToken(token);
+
+    if (existing.rows.length) {
+      account = existing.rows[0];
+      await pool.query(
+        `UPDATE trading_accounts
+         SET name = COALESCE(NULLIF($1,''), name),
+             server = COALESCE(NULLIF($2,''), server),
+             broker = COALESCE(NULLIF($2,''), broker),
+             investor_password = COALESCE(NULLIF($3,''), investor_password),
+             tracker_token_hash = $4
+         WHERE id = $5`,
+        [name, server, password, tokenHash, account.id]
+      );
+    } else {
+      const inserted = await pool.query(
+        `INSERT INTO trading_accounts(user_id, name, broker, server, mt5_login, investor_password, tracker_token_hash)
+         VALUES($1, $2, $3, $4, $5, $6, $7)
+         RETURNING id, name, broker, server, mt5_login, currency, created_at`,
+        [req.user.userId, name, server, server, login, password, tokenHash]
+      );
+      account = inserted.rows[0];
+    }
+
+    res.json({
+      ok: true,
+      account,
+      trackerToken: token,
+      message: "Account connected successfully!"
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Could not connect account.", detail: e.message });
+  }
+});
+
+app.post("/api/accounts/auto-detect", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT a.id, a.name, a.broker, a.server, a.mt5_login, a.currency,
+              s.balance, s.equity, s.updated_at AS last_sync
+       FROM trading_accounts a
+       LEFT JOIN LATERAL (
+         SELECT balance, equity, updated_at
+         FROM account_snapshots
+         WHERE account_id = a.id
+         ORDER BY updated_at DESC
+         LIMIT 1
+       ) s ON true
+       WHERE a.user_id = $1 AND a.mt5_login IS NOT NULL
+       ORDER BY s.updated_at DESC NULLS LAST
+       LIMIT 1`,
+      [req.user.userId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        error: "No active MT5 terminal detected yet. Please ensure MetaTrader 5 is running on your PC."
+      });
+    }
+
+    res.json({
+      ok: true,
+      account: result.rows[0]
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Auto-detect lookup failed." });
+  }
+});
+
+app.get("/api/mt5/sync-targets", async (req, res) => {
+  try {
+    const trackerToken = String(req.headers["x-tracker-token"] || "");
+    if (!trackerToken) {
+      return res.status(401).json({ error: "Missing tracker token" });
+    }
+    const tokenHash = hashTrackerToken(trackerToken);
+    const userRes = await pool.query(
+      `SELECT user_id FROM trading_accounts WHERE tracker_token_hash = $1`,
+      [tokenHash]
+    );
+    if (!userRes.rows.length) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    const userId = userRes.rows[0].user_id;
+    const targets = await pool.query(
+      `SELECT id, name, mt5_login AS login, server, investor_password AS password
+       FROM trading_accounts
+       WHERE user_id = $1 AND mt5_login IS NOT NULL`,
+      [userId]
+    );
+    res.json(targets.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Could not fetch sync targets." });
+  }
+});
 
 app.get("/api/accounts/:id/dashboard", requireAuth, async (req, res) => {
+
   try {
     const accountId = Number(req.params.id);
 
@@ -321,15 +441,18 @@ app.post("/api/mt5/ingest", async (req, res) => {
       `UPDATE trading_accounts
        SET broker=COALESCE(NULLIF($1,''),broker),
            mt5_login=COALESCE($2,mt5_login),
-           currency=COALESCE(NULLIF($3,''),currency)
-       WHERE id=$4`,
+           currency=COALESCE(NULLIF($3,''),currency),
+           server=COALESCE(NULLIF($4,''),server)
+       WHERE id=$5`,
       [
         String(account.broker || ""),
         account.login ? Number(account.login) : null,
         String(account.currency || ""),
+        String(account.server || account.broker || ""),
         accountId
       ].map(v => v === undefined ? null : v)
     );
+
 
     await client.query(
       `INSERT INTO account_snapshots

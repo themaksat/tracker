@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS trading_accounts (
 CREATE INDEX IF NOT EXISTS idx_trading_accounts_user_id
 ON trading_accounts(user_id);
 
+ALTER TABLE trading_accounts ADD COLUMN IF NOT EXISTS server TEXT;
+ALTER TABLE trading_accounts ADD COLUMN IF NOT EXISTS investor_password TEXT;
+
+
 CREATE TABLE IF NOT EXISTS account_snapshots (
     id BIGSERIAL PRIMARY KEY,
     account_id BIGINT NOT NULL REFERENCES trading_accounts(id) ON DELETE CASCADE,
