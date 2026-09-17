@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MT5 PostgreSQL Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#070b13;--p:#0e1524;--p2:#121c2d;--b:#1d2940;--t:#f5f7fb;--m:#8d9ab0;--g:#34d399;--r:#fb7185;--y:#fbbf24;--a:#60a5fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font-family:Inter,system-ui,sans-serif}.wrap{width:min(1450px,95%);margin:auto;padding:24px 0 50px}
+.card,.panel{background:var(--p);border:1px solid var(--b);border-radius:16px;padding:16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}
+h1{font-size:20px;margin:0}.muted{color:var(--m);font-size:12px}.btn,input,select{border:1px solid var(--b);background:var(--p2);color:var(--t);padding:10px 12px;border-radius:10px}.btn{cursor:pointer}.btn.primary{background:#173459;border-color:#285a93}.btn.danger{background:#3a1720}
+.auth{max-width:420px;margin:10vh auto}.auth h2{margin-top:0}.stack{display:grid;gap:10px}.hidden{display:none!important}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.grow{flex:1}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:12px 0}.label{font-size:11px;color:var(--m);margin-bottom:7px}.value{font-size:22px;font-weight:800}
+.green{color:var(--g)}.red{color:var(--r)}.grid{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}.chart{height:300px}
+.table{overflow:auto;border:1px solid var(--b);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1000px}th,td{padding:10px;border-bottom:1px solid var(--b);font-size:12px;text-align:left}th{color:var(--m);background:#0a111d}
+.notice{padding:12px;border-radius:10px;background:#111d31;border:1px solid var(--b);font-size:12px;line-height:1.5}.token{word-break:break-all;font-family:ui-monospace,monospace}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}@media(max-width:800px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="authView" class="auth card">
+  <h2>MT5 Tracker</h2>
+  <div class="muted" style="margin-bottom:14px">Login to see your linked MT5 accounts.</div>
+  <div class="stack">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password (8+ chars)">
+    <div class="row">
+      <button class="btn primary grow" id="loginBtn">Login</button>
+      <button class="btn grow" id="registerBtn">Register</button>
+    </div>
+    <div id="authMsg" class="muted"></div>
+    <div style="margin-top:8px;font-size:11px;text-align:center">
+      <a href="javascript:void(0)" id="authApiUrlLink" style="color:var(--a);text-decoration:none">⚙️ Backend API: <span id="currentApiDisplay"></span></a>
+    </div>
+  </div>
+</div>
+
+<div id="appView" class="hidden">
+  <div class="top">
+    <div>
+      <h1>MT5 PostgreSQL Tracker</h1>
+      <div class="muted">Plain PostgreSQL + Node.js API + MT5 EA</div>
+    </div>
+    <div class="row">
+      <select id="accountSelect"></select>
+      <button class="btn" id="newAccountBtn">+ Connect MT5</button>
+      <button class="btn" id="refreshBtn">Refresh</button>
+      <button class="btn" id="apiUrlBtn">⚙️ API URL</button>
+      <button class="btn danger" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div id="pairBox" class="panel hidden" style="margin-bottom:12px">
+    <div style="font-weight:700;margin-bottom:8px">Pair your MT5 terminal</div>
+    <div class="muted">Copy this token into MT5Tracker.mq5. It is shown only once.</div>
+    <div id="pairToken" class="notice token" style="margin-top:10px"></div>
+    <button class="btn" style="margin-top:10px" onclick="document.getElementById('pairBox').classList.add('hidden')">Hide</button>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="label">Balance</div><div class="value" id="balance">$0</div></div>
+    <div class="card"><div class="label">Equity</div><div class="value" id="equity">$0</div></div>
+    <div class="card"><div class="label">Today P&L</div><div class="value" id="todayPnl">$0</div></div>
+    <div class="card"><div class="label">Win rate</div><div class="value" id="winRate">0%</div></div>
+    <div class="card"><div class="label">Profit factor</div><div class="value" id="profitFactor">0.00</div></div>
+    <div class="card"><div class="label">Trades</div><div class="value" id="tradeCount">0</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel"><div style="font-weight:700">Equity curve</div><div class="chart"><canvas id="equityChart"></canvas></div></div>
+    <div class="panel">
+      <div style="font-weight:700;margin-bottom:10px">Account</div>
+      <div id="accountInfo" class="notice">No account data yet.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <div><b>Trade history</b><div class="muted" id="updated">Not updated</div></div>
+    </div>
+    <div class="table">
+      <table>
+        <thead><tr><th>Ticket</th><th>Time</th><th>Symbol</th><th>Side</th><th>Lots</th><th>Entry</th><th>Exit</th><th>SL</th><th>TP</th><th>RR</th><th>P&L</th><th>Reason</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function getApiBase() {
+  const stored = localStorage.getItem("mt5_api_base");
+  if (stored) return stored.replace(/\/$/, "");
+  if (!window.location.origin.includes("github.io") && window.location.protocol.startsWith("http")) {
+    return window.location.origin;
+  }
+  return "";
+}
+
+let API_BASE = getApiBase();
+
+function updateApiDisplay() {
+  const disp = $("currentApiDisplay");
+  if (disp) disp.textContent = API_BASE || "Not configured (Click to set)";
+}
+
+function promptApiUrl() {
+  const current = API_BASE || "";
+  const input = prompt("Enter your MT5 Tracker Backend API URL:\n(e.g., https://your-tunnel.trycloudflare.com or http://localhost:3000)", current);
+  if (input !== null) {
+    const cleaned = input.trim().replace(/\/$/, "");
+    if (cleaned) {
+      localStorage.setItem("mt5_api_base", cleaned);
+      API_BASE = cleaned;
+    } else {
+      localStorage.removeItem("mt5_api_base");
+      API_BASE = getApiBase();
+    }
+    updateApiDisplay();
+    if (token) loadAccounts();
+  }
+}
+
+let token = localStorage.getItem("mt5_jwt") || "";
+let accounts = [];
+let selectedAccountId = null;
+let chart = null;
+
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n||0));
+const authHeaders = () => ({ "Content-Type":"application/json", "Authorization":"Bearer "+token });
+
+async function api(path, options={}){
+  if (!API_BASE) {
+    promptApiUrl();
+    if (!API_BASE) throw new Error("Backend API URL is required. Click ⚙️ API URL to set it.");
+  }
+  const res = await fetch(API_BASE + path, options);
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+async function login(register=false){
+  $("authMsg").textContent = "";
+  try{
+    const data = await api(register?"/api/auth/register":"/api/auth/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email:$("email").value,password:$("password").value})
+    });
+    token=data.token;
+    localStorage.setItem("mt5_jwt",token);
+    await showApp();
+  }catch(e){ $("authMsg").textContent=e.message; }
+}
+
+async function showApp(){
+  $("authView").classList.add("hidden");
+  $("appView").classList.remove("hidden");
+  await loadAccounts();
+}
+
+async function loadAccounts(){
+  try{
+    accounts = await api("/api/accounts",{headers:authHeaders()});
+    $("accountSelect").innerHTML = accounts.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+    if(accounts.length){
+      selectedAccountId = Number($("accountSelect").value || accounts[0].id);
+      await loadDashboard();
+    }else{
+      $("accountInfo").textContent="No MT5 account connected yet. Click + Connect MT5.";
+      renderEmpty();
+    }
+  }catch(e){
+    if(e.message.includes("token") || e.message.includes("expired")) logout();
+    else alert(e.message);
+  }
+}
+
+async function createAccount(){
+  const name = prompt("Name this MT5 account:", "My MT5");
+  if(!name) return;
+  try{
+    const data=await api("/api/accounts",{
+      method:"POST",headers:authHeaders(),body:JSON.stringify({name})
+    });
+    $("pairToken").textContent=data.trackerToken;
+    $("pairBox").classList.remove("hidden");
+    await loadAccounts();
+  }catch(e){alert(e.message)}
+}
+
+async function loadDashboard(){
+  if(!selectedAccountId) return;
+  try{
+    const data=await api(`/api/accounts/${selectedAccountId}/dashboard`,{headers:authHeaders()});
+    render(data);
+  }catch(e){alert(e.message)}
+}
+
+function render({account,snapshot,trades}){
+  const s=snapshot||{};
+  $("balance").textContent=money(s.balance);
+  $("equity").textContent=money(s.equity);
+
+  const now=new Date();
+  const today=trades.filter(t=>t.close_time && new Date(t.close_time).toDateString()===now.toDateString());
+  const pnlToday=today.reduce((sum,t)=>sum+net(t),0);
+  $("todayPnl").textContent=money(pnlToday);
+  $("todayPnl").className="value "+(pnlToday>=0?"green":"red");
+
+  const wins=trades.filter(t=>net(t)>0);
+  const losses=trades.filter(t=>net(t)<0);
+  const gp=wins.reduce((s,t)=>s+net(t),0);
+  const gl=Math.abs(losses.reduce((s,t)=>s+net(t),0));
+  $("winRate").textContent=(trades.length?wins.length/trades.length*100:0).toFixed(1)+"%";
+  $("profitFactor").textContent=gl? (gp/gl).toFixed(2) : (gp>0?"∞":"0.00");
+  $("tradeCount").textContent=trades.length;
+
+  $("accountInfo").innerHTML=
+    `<b>${escapeHtml(account.name)}</b><br>
+     Broker: ${escapeHtml(account.broker||"Waiting for MT5")}<br>
+     MT5 login: ${account.mt5_login||"Waiting for MT5"}<br>
+     Currency: ${escapeHtml(account.currency||"USD")}<br>
+     Last sync: ${s.updated_at?new Date(s.updated_at).toLocaleString():"Never"}`;
+
+  $("updated").textContent=s.updated_at?"Updated "+new Date(s.updated_at).toLocaleString():"Not synced yet";
+
+  $("tbody").innerHTML=trades.map(t=>`
+    <tr>
+      <td>${t.ticket}</td>
+      <td>${t.close_time?new Date(t.close_time).toLocaleString():"-"}</td>
+      <td>${escapeHtml(t.symbol)}</td>
+      <td class="${t.side==="BUY"?"green":"red"}">${t.side}</td>
+      <td>${Number(t.volume||0).toFixed(2)}</td>
+      <td>${Number(t.entry_price||0).toFixed(2)}</td>
+      <td>${Number(t.exit_price||0).toFixed(2)}</td>
+      <td>${Number(t.sl||0).toFixed(2)}</td>
+      <td>${Number(t.tp||0).toFixed(2)}</td>
+      <td>${Number(t.rr||0).toFixed(2)}R</td>
+      <td class="${net(t)>=0?"green":"red"}">${money(net(t))}</td>
+      <td>${escapeHtml(t.close_reason||"")}</td>
+    </tr>`).join("");
+
+  renderChart(trades);
+}
+
+function renderEmpty(){
+  $("balance").textContent="$0";
+  $("equity").textContent="$0";
+  $("todayPnl").textContent="$0";
+  $("winRate").textContent="0%";
+  $("profitFactor").textContent="0.00";
+  $("tradeCount").textContent="0";
+  $("tbody").innerHTML="";
+  renderChart([]);
+}
+
+function net(t){ return Number(t.profit||0)+Number(t.commission||0)+Number(t.swap||0); }
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+function renderChart(trades){
+  const arr=[...trades].filter(t=>t.close_time).sort((a,b)=>new Date(a.close_time)-new Date(b.close_time));
+  let cum=0;
+  const labels=[],values=[];
+  arr.forEach(t=>{cum+=net(t);labels.push(new Date(t.close_time).toLocaleDateString());values.push(cum)});
+  if(chart) chart.destroy();
+  chart=new Chart($("equityChart"),{
+    type:"line",
+    data:{labels,datasets:[{data:values,borderWidth:2,tension:.25,pointRadius:1}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#8d9ab0"},grid:{color:"rgba(255,255,255,.04)"}},y:{ticks:{color:"#8d9ab0"},grid:{color:"rgba(255,255,255,.04)"}}}}
+  });
+}
+
+function logout(){
+  localStorage.removeItem("mt5_jwt"); token="";
+  $("appView").classList.add("hidden");
+  $("authView").classList.remove("hidden");
+}
+
+$("loginBtn").onclick=()=>login(false);
+$("registerBtn").onclick=()=>login(true);
+$("logoutBtn").onclick=logout;
+$("newAccountBtn").onclick=createAccount;
+$("refreshBtn").onclick=loadDashboard;
+$("apiUrlBtn").onclick=promptApiUrl;
+$("authApiUrlLink").onclick=promptApiUrl;
+$("accountSelect").onchange=async e=>{selectedAccountId=Number(e.target.value);await loadDashboard()};
+
+updateApiDisplay();
+if(token) showApp();
+setInterval(()=>{if(token && selectedAccountId && !document.hidden) loadDashboard()},10000);
+</script>
+</body>
+</html>
