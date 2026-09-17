@@ -1,0 +1,7 @@
+﻿{
+  "default_token": "mt5t_paste_default_token_here",
+  "accounts": {
+    "12345678": "mt5t_token_for_account_1",
+    "87654321": "mt5t_token_for_account_2"
+  }
+}

@@ -155,10 +155,18 @@ app.post("/api/auth/login", async (req, res) => {
 app.get("/api/accounts", requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id,name,broker,mt5_login,currency,created_at
-       FROM trading_accounts
-       WHERE user_id=$1
-       ORDER BY created_at DESC`,
+      `SELECT a.id, a.name, a.broker, a.mt5_login, a.currency, a.created_at,
+              s.balance, s.equity, s.updated_at AS last_sync
+       FROM trading_accounts a
+       LEFT JOIN LATERAL (
+         SELECT balance, equity, updated_at
+         FROM account_snapshots
+         WHERE account_id = a.id
+         ORDER BY updated_at DESC
+         LIMIT 1
+       ) s ON true
+       WHERE a.user_id = $1
+       ORDER BY a.created_at DESC`,
       [req.user.userId]
     );
     res.json(result.rows);
@@ -190,6 +198,49 @@ app.post("/api/accounts", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Could not create account." });
   }
 });
+
+app.delete("/api/accounts/:id", requireAuth, async (req, res) => {
+  try {
+    const accountId = Number(req.params.id);
+    await pool.query(
+      "DELETE FROM trading_accounts WHERE id=$1 AND user_id=$2",
+      [accountId, req.user.userId]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Could not delete account." });
+  }
+});
+
+app.post("/api/accounts/:id/regenerate-token", requireAuth, async (req, res) => {
+  try {
+    const accountId = Number(req.params.id);
+    const token = newTrackerToken();
+    const tokenHash = hashTrackerToken(token);
+
+    const result = await pool.query(
+      `UPDATE trading_accounts
+       SET tracker_token_hash = $1
+       WHERE id = $2 AND user_id = $3
+       RETURNING id, name, broker, mt5_login, currency, created_at`,
+      [tokenHash, accountId, req.user.userId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Account not found." });
+    }
+
+    res.json({
+      account: result.rows[0],
+      trackerToken: token
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Could not regenerate token." });
+  }
+});
+
 
 app.get("/api/accounts/:id/dashboard", requireAuth, async (req, res) => {
   try {

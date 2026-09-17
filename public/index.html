@@ -6,86 +6,372 @@
 <title>MT5 PostgreSQL Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root{--bg:#070b13;--p:#0e1524;--p2:#121c2d;--b:#1d2940;--t:#f5f7fb;--m:#8d9ab0;--g:#34d399;--r:#fb7185;--y:#fbbf24;--a:#60a5fa}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font-family:Inter,system-ui,sans-serif}.wrap{width:min(1450px,95%);margin:auto;padding:24px 0 50px}
-.card,.panel{background:var(--p);border:1px solid var(--b);border-radius:16px;padding:16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}
-h1{font-size:20px;margin:0}.muted{color:var(--m);font-size:12px}.btn,input,select{border:1px solid var(--b);background:var(--p2);color:var(--t);padding:10px 12px;border-radius:10px}.btn{cursor:pointer}.btn.primary{background:#173459;border-color:#285a93}.btn.danger{background:#3a1720}
-.auth{max-width:420px;margin:10vh auto}.auth h2{margin-top:0}.stack{display:grid;gap:10px}.hidden{display:none!important}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.grow{flex:1}
-.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:12px 0}.label{font-size:11px;color:var(--m);margin-bottom:7px}.value{font-size:22px;font-weight:800}
-.green{color:var(--g)}.red{color:var(--r)}.grid{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}.chart{height:300px}
-.table{overflow:auto;border:1px solid var(--b);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1000px}th,td{padding:10px;border-bottom:1px solid var(--b);font-size:12px;text-align:left}th{color:var(--m);background:#0a111d}
-.notice{padding:12px;border-radius:10px;background:#111d31;border:1px solid var(--b);font-size:12px;line-height:1.5}.token{word-break:break-all;font-family:ui-monospace,monospace}
-@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}@media(max-width:800px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+:root{
+  --bg:#070b13;--p:#0e1524;--p2:#121c2d;--p3:#18253c;--b:#1d2940;--t:#f5f7fb;
+  --m:#8d9ab0;--g:#34d399;--r:#fb7185;--y:#fbbf24;--a:#60a5fa
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font-family:Inter,system-ui,-apple-system,sans-serif}
+.wrap{width:min(1450px,95%);margin:auto;padding:20px 0 50px}
+.card,.panel{background:var(--p);border:1px solid var(--b);border-radius:16px;padding:16px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+h1{font-size:20px;margin:0;letter-spacing:-0.3px}
+.muted{color:var(--m);font-size:12px}
+.btn,input,select{
+  border:1px solid var(--b);background:var(--p2);color:var(--t);
+  padding:9px 13px;border-radius:10px;font-size:13px;font-family:inherit;outline:none;
+  transition:all 0.15s ease;
+}
+.btn{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{background:var(--p3);border-color:#2b3e60}
+.btn.primary{background:#1d4ed8;border-color:#3b82f6;color:#fff;font-weight:600}
+.btn.primary:hover{background:#2563eb}
+.btn.danger{background:#45121b;border-color:#7f1d1d;color:#fca5a5}
+.btn.danger:hover{background:#5e1823}
+.auth{max-width:420px;margin:10vh auto}
+.auth h2{margin-top:0}
+.stack{display:grid;gap:12px}
+.hidden{display:none!important}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:12px 0}
+.label{font-size:11px;color:var(--m);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.value{font-size:22px;font-weight:800}
+.green{color:var(--g)}.red{color:var(--r)}.blue{color:var(--a)}
+.grid{display:grid;grid-template-columns:2.2fr 1fr;gap:12px;margin-bottom:12px}
+.chart{height:300px}
+.table{overflow:auto;border:1px solid var(--b);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:1000px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--b);font-size:12px;text-align:left}
+th{color:var(--m);background:#0a111d;font-weight:600}
+.notice{padding:12px 14px;border-radius:10px;background:#111d31;border:1px solid var(--b);font-size:12px;line-height:1.5}
+.token{word-break:break-all;font-family:ui-monospace,monospace}
+.copy-pill{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
+  border-radius:7px;background:#172844;border:1px solid var(--b);
+  color:var(--a);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
+}
+.copy-pill:hover{background:#1e355c;color:#fff}
+.code-box{
+  background:#080d16;border:1px solid var(--b);border-radius:8px;padding:8px 12px;
+  font-family:ui-monospace,monospace;font-size:12px;color:#cbd5e1;display:flex;
+  align-items:center;justify-content:space-between;gap:8px;
+}
+.instruction-box{
+  background:#090f1b;border:1px solid var(--b);border-radius:12px;padding:14px;
+  font-size:12.5px;line-height:1.6;
+}
+.instruction-box ol{margin:8px 0 4px;padding-left:20px}
+.instruction-box li{margin-bottom:8px}
+.pill{
+  display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:600;
+}
+.pill.synced{background:#0e281e;color:var(--g);border:1px solid #1c523c}
+.pill.pending{background:#231a0e;color:var(--y);border:1px solid #5a3f12}
+/* Modal styles */
+.modal-backdrop{
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(4,7,13,0.75);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;padding:16px;
+}
+.modal-box{
+  background:var(--p);border:1px solid var(--b);border-radius:16px;
+  width:min(600px,100%);max-height:90vh;overflow-y:auto;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,0.7);padding:22px;
+}
+.modal-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:16px;border-bottom:1px solid var(--b);padding-bottom:12px;
+}
+.modal-header h3{margin:0;font-size:17px;font-weight:700}
+.close-btn{
+  background:none;border:none;color:var(--m);font-size:22px;cursor:pointer;line-height:1;
+}
+.close-btn:hover{color:var(--t)}
+.tab-row{
+  display:flex;gap:6px;margin:12px 0;border-bottom:1px solid var(--b);padding-bottom:8px;
+}
+.tab-btn{
+  background:none;border:none;color:var(--m);padding:7px 12px;border-radius:8px;
+  cursor:pointer;font-size:12px;font-weight:600;
+}
+.tab-btn.active{
+  background:var(--p2);color:var(--t);border:1px solid var(--b);
+}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<div id="authView" class="auth card">
-  <h2>MT5 Tracker</h2>
-  <div class="muted" style="margin-bottom:14px">Login to see your linked MT5 accounts.</div>
-  <div class="stack">
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password (8+ chars)">
-    <div class="row">
-      <button class="btn primary grow" id="loginBtn">Login</button>
-      <button class="btn grow" id="registerBtn">Register</button>
+  <div id="authView" class="auth card">
+    <h2>MT5 Tracker</h2>
+    <div class="muted" style="margin-bottom:14px">Login to view your MT5 accounts and trading analytics.</div>
+    <div class="stack">
+      <input id="email" type="email" placeholder="Email (e.g. trader@example.com)">
+      <input id="password" type="password" placeholder="Password (8+ characters)">
+      <div class="row">
+        <button class="btn primary grow" id="loginBtn">Login</button>
+        <button class="btn grow" id="registerBtn">Register</button>
+      </div>
+      <div id="authMsg" class="muted"></div>
+      <div style="margin-top:8px;font-size:11px;text-align:center">
+        <a href="javascript:void(0)" id="authApiUrlLink" style="color:var(--a);text-decoration:none">⚙️ Backend API: <span id="currentApiDisplay"></span></a>
+      </div>
     </div>
-    <div id="authMsg" class="muted"></div>
-    <div style="margin-top:8px;font-size:11px;text-align:center">
-      <a href="javascript:void(0)" id="authApiUrlLink" style="color:var(--a);text-decoration:none">⚙️ Backend API: <span id="currentApiDisplay"></span></a>
+  </div>
+
+  <div id="appView" class="hidden">
+    <div class="top">
+      <div>
+        <h1 style="display:flex;align-items:center;gap:8px">
+          📊 MT5 Cloud Tracker
+        </h1>
+        <div class="muted">Connected to: <span id="topApiDisplay" style="color:var(--g)"></span></div>
+      </div>
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:6px">
+          <select id="accountSelect" style="min-width:240px;max-width:340px;text-overflow:ellipsis"></select>
+          <button class="btn" id="setupAccountBtn" title="Account Setup & Token">🔑 Setup</button>
+          <button class="btn danger" id="deleteAccountBtn" title="Delete Account" style="padding:9px 11px">🗑️</button>
+        </div>
+        <button class="btn primary" id="newAccountBtn">+ Add Account</button>
+        <button class="btn" id="refreshBtn">🔄 Refresh</button>
+        <button class="btn" id="apiUrlBtn">⚙️ API</button>
+        <button class="btn danger" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="cards">
+      <div class="card"><div class="label">Balance</div><div class="value" id="balance">$0.00</div></div>
+      <div class="card"><div class="label">Equity</div><div class="value" id="equity">$0.00</div></div>
+      <div class="card"><div class="label">Today P&L</div><div class="value" id="todayPnl">$0.00</div></div>
+      <div class="card"><div class="label">Win Rate</div><div class="value" id="winRate">0%</div></div>
+      <div class="card"><div class="label">Profit Factor</div><div class="value" id="profitFactor">0.00</div></div>
+      <div class="card"><div class="label">Closed Trades</div><div class="value" id="tradeCount">0</div></div>
+    </div>
+
+    <!-- Chart & Account Info -->
+    <div class="grid">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-weight:700">Cumulative Net Profit Curve</div>
+          <div class="muted" id="chartTradesCount"></div>
+        </div>
+        <div class="chart"><canvas id="equityChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <div style="font-weight:700;margin-bottom:10px">Active Account</div>
+        <div id="accountInfo" class="notice">No account data yet.</div>
+      </div>
+    </div>
+
+    <!-- Trade History Table -->
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <div><b>Trade History</b><div class="muted" id="updated">Not updated</div></div>
+      </div>
+      <div class="table">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket</th><th>Close Time</th><th>Symbol</th><th>Side</th>
+              <th>Lots</th><th>Entry</th><th>Exit</th><th>SL</th><th>TP</th>
+              <th>RR</th><th>Net P&L</th><th>Exit Reason</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: Connect MT5 Account -->
+<div id="connectModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalConnectTitle">Connect New MT5 Account</h3>
+      <button class="close-btn" onclick="closeConnectModal()">&times;</button>
+    </div>
+
+    <!-- Step 1: Account Name -->
+    <div id="connectStep1" class="stack">
+      <div class="muted">Enter a nickname for your MT5 account (e.g. RoboForex Real, FTMO Challenge, Personal Demo).</div>
+      <input id="newAccNameInput" type="text" placeholder="e.g. My RoboForex Live" autofocus>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary grow" id="confirmCreateAccBtn">Create & Get Connection Key ➔</button>
+        <button class="btn" onclick="closeConnectModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Connection Key & 1-Click Downloads -->
+    <div id="connectStep2" class="stack hidden">
+      <div style="background:#0c251a;border:1px solid #1c523c;padding:12px;border-radius:10px;color:var(--g);font-size:13px">
+        ✅ Account <b id="createdAccName"></b> created!
+      </div>
+
+      <div>
+        <div class="label" style="font-size:11px;font-weight:700">YOUR MT5 TRACKER TOKEN:</div>
+        <div class="code-box">
+          <span id="createdAccToken" style="font-size:11.5px"></span>
+          <button class="copy-pill" id="copyTokenBtn" onclick="copyTokenToClipboard()">📋 Copy</button>
+        </div>
+        <div class="muted" style="font-size:11px;margin-top:4px">⚠️ Keep this token private. It authenticates your MT5 sync.</div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" id="tabEABtn" onclick="switchTab('ea')">Option 1: MT5 EA (Recommended)</button>
+        <button class="tab-btn" id="tabBridgeBtn" onclick="switchTab('bridge')">Option 2: Python Bridge</button>
+      </div>
+
+      <!-- Tab EA -->
+      <div id="tabEAContent">
+        <div style="text-align:center;margin:12px 0">
+          <button class="btn primary" style="padding:12px 20px;font-size:13.5px;font-weight:700" onclick="downloadPreconfiguredEA()">
+            ⬇️ Download Pre-Configured EA (.mq5)
+          </button>
+          <div class="muted" style="margin-top:5px;font-size:11px">Your token and API URL are already baked inside the file!</div>
+        </div>
+
+        <div class="instruction-box">
+          <b>Quick 3-Step Setup in MetaTrader 5:</b>
+          <ol>
+            <li>
+              In MT5: Go to <b>Tools ➔ Options ➔ Expert Advisors</b>.<br>
+              Check <b>"Allow WebRequest for listed URL"</b> and add:<br>
+              <div style="display:flex;align-items:center;gap:6px;margin:6px 0">
+                <span class="code-box" style="padding:4px 8px;font-size:11px" id="webrequestUrlDisplay"></span>
+                <button class="copy-pill" onclick="copyWebRequestUrl()">📋 Copy URL</button>
+              </div>
+            </li>
+            <li>
+              In MT5: Click <b>File ➔ Open Data Folder</b>.<br>
+              Open <span class="muted" style="font-family:monospace">MQL5\Experts</span> and drop the downloaded <span class="muted" style="font-family:monospace">MT5Tracker.mq5</span> there.
+            </li>
+            <li>
+              In MT5: Press <kbd>F4</kbd> (MetaEditor) ➔ Open <span class="muted" style="font-family:monospace">MT5Tracker.mq5</span> ➔ Click <b>Compile</b>.<br>
+              Then back in MT5, drag <b>MT5Tracker</b> onto <i>any 1 chart</i>. Done!
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Tab Bridge -->
+      <div id="tabBridgeContent" class="hidden">
+        <div style="text-align:center;margin:12px 0">
+          <button class="btn primary" style="padding:12px 20px;font-size:13.5px;font-weight:700" onclick="downloadPreconfiguredBridge()">
+            ⬇️ Download Python Bridge (bridge.py)
+          </button>
+          <div class="muted" style="margin-top:5px;font-size:11px">Auto-syncs whenever MT5 is running on your PC.</div>
+        </div>
+
+        <div class="instruction-box">
+          <b>Setup for Windows PC / VPS:</b>
+          <ol>
+            <li>Save <span class="muted" style="font-family:monospace">bridge.py</span> into your folder.</li>
+            <li>Run command:
+              <div style="display:flex;align-items:center;gap:6px;margin:6px 0">
+                <span class="code-box" style="padding:4px 8px;font-size:11px">python bridge.py</span>
+                <button class="copy-pill" onclick="copyText('python bridge.py', this)">📋 Copy</button>
+              </div>
+            </li>
+            <li>The bridge automatically reads active positions and trades and syncs them to your cloud dashboard!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px;justify-content:flex-end">
+        <button class="btn primary" onclick="closeConnectModal()">Done / View Dashboard</button>
+      </div>
     </div>
   </div>
 </div>
 
-<div id="appView" class="hidden">
-  <div class="top">
-    <div>
-      <h1>MT5 PostgreSQL Tracker</h1>
-      <div class="muted">Connected to: <span id="topApiDisplay" style="color:var(--g)"></span></div>
+<!-- MODAL: Account Setup & Credentials -->
+<div id="setupModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Account Credentials & Setup</h3>
+      <button class="close-btn" onclick="closeSetupModal()">&times;</button>
     </div>
-    <div class="row">
-      <select id="accountSelect"></select>
-      <button class="btn" id="newAccountBtn">+ Connect MT5</button>
-      <button class="btn" id="refreshBtn">Refresh</button>
-      <button class="btn" id="apiUrlBtn">⚙️ API URL</button>
-      <button class="btn danger" id="logoutBtn">Logout</button>
+    
+    <div class="stack">
+      <div class="notice">
+        <b>Account:</b> <span id="setupAccName"></span><br>
+        <b>Broker:</b> <span id="setupAccBroker"></span><br>
+        <b>MT5 Login:</b> <span id="setupAccLogin"></span><br>
+        <b>Last Sync:</b> <span id="setupAccSync"></span>
+      </div>
+
+      <div>
+        <div style="font-weight:700;font-size:13px;margin-bottom:6px">Download EA for this Account:</div>
+        <button class="btn primary" style="width:100%;padding:11px" onclick="downloadEAForSelectedAccount()">
+          ⬇️ Download Pre-Configured EA (.mq5)
+        </button>
+        <div class="muted" style="font-size:11px;margin-top:4px">
+          Downloads the MT5 Expert Advisor. If you lost your token, click "Regenerate Token" below.
+        </div>
+      </div>
+
+      <div class="instruction-box">
+        <b>MT5 WebRequest URL:</b>
+        <div style="display:flex;align-items:center;gap:6px;margin:6px 0">
+          <span class="code-box" style="padding:4px 8px;font-size:11px" id="setupWebrequestUrl"></span>
+          <button class="copy-pill" onclick="copyWebRequestUrl()">📋 Copy URL</button>
+        </div>
+        <div class="muted" style="font-size:11px">Add this in MT5: Tools ➔ Options ➔ Expert Advisors ➔ Allow WebRequest.</div>
+      </div>
+
+      <div style="border-top:1px solid var(--b);padding-top:12px;margin-top:4px">
+        <div style="font-weight:700;font-size:13px;color:var(--y);margin-bottom:4px">Lost Token? Regenerate Connection Key</div>
+        <div class="muted" style="font-size:11.5px;margin-bottom:8px">
+          Issuing a new token will invalidate the old one. You will get an updated pre-configured EA immediately.
+        </div>
+        <button class="btn" style="border-color:var(--y);color:var(--y)" id="regenerateBtn" onclick="regenerateSelectedAccountToken()">
+          🔄 Generate New Token
+        </button>
+        <div id="regenTokenResult" class="stack hidden" style="margin-top:10px">
+          <div class="code-box">
+            <span id="regenTokenText" style="font-size:11px"></span>
+            <button class="copy-pill" onclick="copyRegenToken(this)">📋 Copy</button>
+          </div>
+          <button class="btn primary" style="padding:10px" onclick="downloadPreconfiguredEA(latestCreatedToken)">
+            ⬇️ Download Updated EA with New Token
+          </button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;justify-content:flex-end">
+        <button class="btn" onclick="closeSetupModal()">Close</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <div id="pairBox" class="panel hidden" style="margin-bottom:12px">
-    <div style="font-weight:700;margin-bottom:8px">Pair your MT5 terminal</div>
-    <div class="muted">Copy this token into MT5Tracker.mq5. It is shown only once.</div>
-    <div id="pairToken" class="notice token" style="margin-top:10px"></div>
-    <button class="btn" style="margin-top:10px" onclick="document.getElementById('pairBox').classList.add('hidden')">Hide</button>
-  </div>
-
-  <div class="cards">
-    <div class="card"><div class="label">Balance</div><div class="value" id="balance">$0</div></div>
-    <div class="card"><div class="label">Equity</div><div class="value" id="equity">$0</div></div>
-    <div class="card"><div class="label">Today P&L</div><div class="value" id="todayPnl">$0</div></div>
-    <div class="card"><div class="label">Win rate</div><div class="value" id="winRate">0%</div></div>
-    <div class="card"><div class="label">Profit factor</div><div class="value" id="profitFactor">0.00</div></div>
-    <div class="card"><div class="label">Trades</div><div class="value" id="tradeCount">0</div></div>
-  </div>
-
-  <div class="grid">
-    <div class="panel"><div style="font-weight:700">Equity curve</div><div class="chart"><canvas id="equityChart"></canvas></div></div>
-    <div class="panel">
-      <div style="font-weight:700;margin-bottom:10px">Account</div>
-      <div id="accountInfo" class="notice">No account data yet.</div>
+<!-- MODAL: Delete Account Confirmation -->
+<div id="deleteModal" class="modal-backdrop hidden">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header">
+      <h3 style="color:var(--r)">Delete Account</h3>
+      <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
     </div>
-  </div>
-
-  <div class="panel">
-    <div class="row" style="justify-content:space-between;margin-bottom:10px">
-      <div><b>Trade history</b><div class="muted" id="updated">Not updated</div></div>
-    </div>
-    <div class="table">
-      <table>
-        <thead><tr><th>Ticket</th><th>Time</th><th>Symbol</th><th>Side</th><th>Lots</th><th>Entry</th><th>Exit</th><th>SL</th><th>TP</th><th>RR</th><th>P&L</th><th>Reason</th></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
+    <div class="stack">
+      <p style="font-size:13px;line-height:1.5;margin:0">
+        Are you sure you want to delete <b id="deleteAccName"></b>?
+      </p>
+      <div class="notice" style="border-color:#5c1d24;background:#240e13;color:#fca5a5;font-size:12px">
+        ⚠️ This will permanently remove this account, its trade snapshots, and all recorded trade history.
+      </div>
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn danger" id="confirmDeleteBtn" onclick="executeDeleteAccount()">Delete Permanently</button>
+      </div>
     </div>
   </div>
 </div>
@@ -110,6 +396,10 @@ function updateApiDisplay() {
   if (disp) disp.textContent = API_BASE || "Not configured (Click to set)";
   const topDisp = $("topApiDisplay");
   if (topDisp) topDisp.textContent = API_BASE || "Not configured";
+  const w1 = $("webrequestUrlDisplay");
+  if (w1) w1.textContent = API_BASE;
+  const w2 = $("setupWebrequestUrl");
+  if (w2) w2.textContent = API_BASE;
 }
 
 function promptApiUrl() {
@@ -133,6 +423,8 @@ let token = localStorage.getItem("mt5_jwt") || "";
 let accounts = [];
 let selectedAccountId = null;
 let chart = null;
+let latestCreatedToken = "";
+let latestCreatedName = "";
 
 const $ = id => document.getElementById(id);
 const money = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n||0));
@@ -184,12 +476,29 @@ async function showApp(){
 async function loadAccounts(){
   try{
     accounts = await api("/api/accounts",{headers:authHeaders()});
-    $("accountSelect").innerHTML = accounts.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
-    if(accounts.length){
-      selectedAccountId = Number($("accountSelect").value || accounts[0].id);
+    const select = $("accountSelect");
+    
+    if (accounts.length) {
+      select.innerHTML = accounts.map(a => {
+        const hasBal = a.balance !== null && a.balance !== undefined;
+        const balText = hasBal ? ' · ' + money(a.balance) : ' · (Pending)';
+        const brokerText = (a.broker && a.mt5_login) ? ' · ' + a.broker + ' #' + a.mt5_login : '';
+        return '<option value="' + a.id + '">' + escapeHtml(a.name) + escapeHtml(brokerText) + escapeHtml(balText) + '</option>';
+      }).join('');
+
+      if (!selectedAccountId || !accounts.some(a => a.id === selectedAccountId)) {
+        selectedAccountId = Number(select.value || accounts[0].id);
+      } else {
+        select.value = selectedAccountId;
+      }
+      $("setupAccountBtn").disabled = false;
+      $("deleteAccountBtn").disabled = false;
       await loadDashboard();
-    }else{
-      $("accountInfo").textContent="No MT5 account connected yet. Click + Connect MT5.";
+    } else {
+      select.innerHTML = '<option value="">(No accounts connected)</option>';
+      $("setupAccountBtn").disabled = true;
+      $("deleteAccountBtn").disabled = true;
+      $("accountInfo").innerHTML = "No MT5 account connected yet. Click <b>+ Add Account</b> to connect your MT5 terminal in 1 click.";
       renderEmpty();
     }
   }catch(e){
@@ -198,23 +507,622 @@ async function loadAccounts(){
   }
 }
 
-async function createAccount(){
-  const name = prompt("Name this MT5 account:", "My MT5");
-  if(!name) return;
+function openConnectModal(){
+  $("newAccNameInput").value = "";
+  $("connectStep1").classList.remove("hidden");
+  $("connectStep2").classList.add("hidden");
+  $("connectModal").classList.remove("hidden");
+  setTimeout(()=> $("newAccNameInput").focus(), 100);
+}
+
+function closeConnectModal(){
+  $("connectModal").classList.add("hidden");
+}
+
+async function confirmCreateAccount(){
+  const name = $("newAccNameInput").value.trim() || "MT5 Account " + (accounts.length + 1);
   try{
-    const data=await api("/api/accounts",{
+    const data = await api("/api/accounts",{
       method:"POST",headers:authHeaders(),body:JSON.stringify({name})
     });
-    $("pairToken").textContent=data.trackerToken;
-    $("pairBox").classList.remove("hidden");
+    latestCreatedToken = data.trackerToken;
+    latestCreatedName = data.account.name;
+
+    $("createdAccName").textContent = latestCreatedName;
+    $("createdAccToken").textContent = latestCreatedToken;
+    $("connectStep1").classList.add("hidden");
+    $("connectStep2").classList.remove("hidden");
+    selectedAccountId = data.account.id;
     await loadAccounts();
-  }catch(e){alert(e.message)}
+  }catch(e){ alert(e.message); }
+}
+
+function switchTab(tab){
+  if(tab === 'ea'){
+    $("tabEABtn").classList.add("active");
+    $("tabBridgeBtn").classList.remove("active");
+    $("tabEAContent").classList.remove("hidden");
+    $("tabBridgeContent").classList.add("hidden");
+  }else{
+    $("tabBridgeBtn").classList.add("active");
+    $("tabEABtn").classList.remove("active");
+    $("tabBridgeContent").classList.remove("hidden");
+    $("tabEAContent").classList.add("hidden");
+  }
+}
+
+function copyText(text, btnElement){
+  navigator.clipboard.writeText(text).then(()=>{
+    const old = btnElement.textContent;
+    btnElement.textContent = "Copied!";
+    setTimeout(()=> btnElement.textContent = old, 1500);
+  });
+}
+
+function copyTokenToClipboard(){
+  copyText(latestCreatedToken, $("copyTokenBtn"));
+}
+
+function copyRegenToken(btn){
+  copyText(latestCreatedToken, btn);
+}
+
+function copyWebRequestUrl(){
+  navigator.clipboard.writeText(API_BASE).then(()=>{
+    alert("Copied " + API_BASE + " to clipboard! Add this into MT5: Tools -> Options -> Expert Advisors -> Allow WebRequest.");
+  });
+}
+
+function downloadFile(filename, content){
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function getEATemplate(tokenVal, apiUrlVal){
+  return `#property strict
+#property version   "1.00"
+#property description "MT5 -> PostgreSQL Tracker bridge through your own Node.js API"
+
+input string ApiUrl       = "${apiUrlVal}/api/mt5/ingest";
+input string TrackerToken = "${tokenVal}";
+input int    SyncSeconds  = 15;
+input int    HistoryDays  = 30;
+
+datetime lastSync = 0;
+
+string EscapeJson(string s)
+{
+   StringReplace(s,"\\","\\\\");
+   StringReplace(s,"\"","\\\"");
+   StringReplace(s,"\r","");
+   StringReplace(s,"\n","\\n");
+   return s;
+}
+
+string IsoTime(datetime t)
+{
+   if(t<=0) return "";
+   MqlDateTime dt;
+   TimeToStruct(t,dt);
+   return StringFormat("%04d-%02d-%02dT%02d:%02d:%02dZ",
+      dt.year,dt.mon,dt.day,dt.hour,dt.min,dt.sec);
+}
+
+string DealReasonToString(long reason)
+{
+   switch((ENUM_DEAL_REASON)reason)
+   {
+      case DEAL_REASON_SL: return "SL";
+      case DEAL_REASON_TP: return "TP";
+      case DEAL_REASON_SO: return "STOP_OUT";
+      case DEAL_REASON_EXPERT: return "EA";
+      case DEAL_REASON_CLIENT: return "MANUAL";
+      case DEAL_REASON_MOBILE: return "MOBILE";
+      case DEAL_REASON_WEB: return "WEB";
+      default: return "OTHER";
+   }
+}
+
+string SideToString(long type)
+{
+   if(type==DEAL_TYPE_SELL) return "SELL";
+   return "BUY";
+}
+
+double FindPositionEntryPrice(ulong position_id)
+{
+   datetime from=TimeCurrent()-(HistoryDays*86400);
+   if(!HistorySelect(from,TimeCurrent())) return 0;
+
+   int total=HistoryDealsTotal();
+   for(int i=0;i<total;i++)
+   {
+      ulong ticket=HistoryDealGetTicket(i);
+      if(ticket==0) continue;
+      if((ulong)HistoryDealGetInteger(ticket,DEAL_POSITION_ID)!=position_id) continue;
+
+      long entry=HistoryDealGetInteger(ticket,DEAL_ENTRY);
+      if(entry==DEAL_ENTRY_IN || entry==DEAL_ENTRY_INOUT)
+         return HistoryDealGetDouble(ticket,DEAL_PRICE);
+   }
+   return 0;
+}
+
+datetime FindPositionOpenTime(ulong position_id)
+{
+   datetime from=TimeCurrent()-(HistoryDays*86400);
+   if(!HistorySelect(from,TimeCurrent())) return 0;
+
+   int total=HistoryDealsTotal();
+   for(int i=0;i<total;i++)
+   {
+      ulong ticket=HistoryDealGetTicket(i);
+      if(ticket==0) continue;
+      if((ulong)HistoryDealGetInteger(ticket,DEAL_POSITION_ID)!=position_id) continue;
+
+      long entry=HistoryDealGetInteger(ticket,DEAL_ENTRY);
+      if(entry==DEAL_ENTRY_IN || entry==DEAL_ENTRY_INOUT)
+         return (datetime)HistoryDealGetInteger(ticket,DEAL_TIME);
+   }
+   return 0;
+}
+
+void FindPositionSLTP(ulong position_id,double &sl,double &tp)
+{
+   sl=0; tp=0;
+   if(HistorySelectByPosition(position_id))
+   {
+      int orders=HistoryOrdersTotal();
+      for(int i=orders-1;i>=0;i--)
+      {
+         ulong ord=HistoryOrderGetTicket(i);
+         if(ord==0) continue;
+
+         double osl=HistoryOrderGetDouble(ord,ORDER_SL);
+         double otp=HistoryOrderGetDouble(ord,ORDER_TP);
+
+         if(osl>0 && sl==0) sl=osl;
+         if(otp>0 && tp==0) tp=otp;
+
+         if(sl>0 && tp>0) break;
+      }
+   }
+}
+
+double CalculateRR(string side,double entry,double sl,double tp)
+{
+   if(entry<=0 || sl<=0 || tp<=0) return 0;
+   double risk=MathAbs(entry-sl);
+   double reward=MathAbs(tp-entry);
+   if(risk<=0) return 0;
+   return reward/risk;
+}
+
+string BuildClosedTradesJson()
+{
+   datetime from=TimeCurrent()-(HistoryDays*86400);
+   datetime to=TimeCurrent();
+
+   if(!HistorySelect(from,to)) return "[]";
+
+   string json="[";
+   bool first=true;
+
+   int total=HistoryDealsTotal();
+   for(int i=0;i<total;i++)
+   {
+      ulong deal=HistoryDealGetTicket(i);
+      if(deal==0) continue;
+
+      long entry=HistoryDealGetInteger(deal,DEAL_ENTRY);
+      if(entry!=DEAL_ENTRY_OUT && entry!=DEAL_ENTRY_OUT_BY) continue;
+
+      long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+      if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL) continue;
+
+      ulong position_id=(ulong)HistoryDealGetInteger(deal,DEAL_POSITION_ID);
+      string symbol=HistoryDealGetString(deal,DEAL_SYMBOL);
+      double volume=HistoryDealGetDouble(deal,DEAL_VOLUME);
+      double exitPrice=HistoryDealGetDouble(deal,DEAL_PRICE);
+      double profit=HistoryDealGetDouble(deal,DEAL_PROFIT);
+      double commission=HistoryDealGetDouble(deal,DEAL_COMMISSION);
+      double swap=HistoryDealGetDouble(deal,DEAL_SWAP);
+      long magic=HistoryDealGetInteger(deal,DEAL_MAGIC);
+      long reason=HistoryDealGetInteger(deal,DEAL_REASON);
+      datetime closeTime=(datetime)HistoryDealGetInteger(deal,DEAL_TIME);
+
+      double entryPrice=FindPositionEntryPrice(position_id);
+      datetime openTime=FindPositionOpenTime(position_id);
+
+      double sl,tp;
+      FindPositionSLTP(position_id,sl,tp);
+
+      string side=SideToString(dealType);
+      side=(side=="BUY" ? "SELL" : "BUY");
+
+      double rr=CalculateRR(side,entryPrice,sl,tp);
+      string source=(reason==DEAL_REASON_EXPERT ? "EA" : "MANUAL");
+
+      if(!first) json+=",";
+      first=false;
+
+      json+="{";
+      json+="\"ticket\":"+IntegerToString((long)deal)+",";
+      json+="\"position_id\":"+IntegerToString((long)position_id)+",";
+      json+="\"open_time\":\""+IsoTime(openTime)+"\",";
+      json+="\"close_time\":\""+IsoTime(closeTime)+"\",";
+      json+="\"symbol\":\""+EscapeJson(symbol)+"\",";
+      json+="\"side\":\""+side+"\",";
+      json+="\"volume\":"+DoubleToString(volume,4)+",";
+      json+="\"entry_price\":"+DoubleToString(entryPrice,8)+",";
+      json+="\"exit_price\":"+DoubleToString(exitPrice,8)+",";
+      json+="\"sl\":"+DoubleToString(sl,8)+",";
+      json+="\"tp\":"+DoubleToString(tp,8)+",";
+      json+="\"rr\":"+DoubleToString(rr,4)+",";
+      json+="\"profit\":"+DoubleToString(profit,2)+",";
+      json+="\"commission\":"+DoubleToString(commission,2)+",";
+      json+="\"swap\":"+DoubleToString(swap,2)+",";
+      json+="\"source\":\""+source+"\",";
+      json+="\"strategy\":\"\",";
+      json+="\"magic\":"+IntegerToString(magic)+",";
+      json+="\"close_reason\":\""+DealReasonToString(reason)+"\"";
+      json+="}";
+   }
+
+   json+="]";
+   return json;
+}
+
+bool SendSnapshot()
+{
+   if(TrackerToken=="" || StringFind(TrackerToken,"PASTE_")==0)
+   {
+      Print("TrackerToken is not configured.");
+      return false;
+   }
+
+   string broker=AccountInfoString(ACCOUNT_COMPANY);
+   long login=AccountInfoInteger(ACCOUNT_LOGIN);
+   string currency=AccountInfoString(ACCOUNT_CURRENCY);
+
+   double balance=AccountInfoDouble(ACCOUNT_BALANCE);
+   double equity=AccountInfoDouble(ACCOUNT_EQUITY);
+   double margin=AccountInfoDouble(ACCOUNT_MARGIN);
+   double freeMargin=AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   double floating=equity-balance;
+
+   string json="{";
+   json+="\"account\":{";
+   json+="\"broker\":\""+EscapeJson(broker)+"\",";
+   json+="\"login\":"+IntegerToString(login)+",";
+   json+="\"currency\":\""+EscapeJson(currency)+"\"";
+   json+="},";
+
+   json+="\"snapshot\":{";
+   json+="\"balance\":"+DoubleToString(balance,2)+",";
+   json+="\"equity\":"+DoubleToString(equity,2)+",";
+   json+="\"floating_pnl\":"+DoubleToString(floating,2)+",";
+   json+="\"margin\":"+DoubleToString(margin,2)+",";
+   json+="\"free_margin\":"+DoubleToString(freeMargin,2);
+   json+="},";
+
+   json+="\"trades\":"+BuildClosedTradesJson();
+   json+="}";
+
+   char data[];
+   StringToCharArray(json,data,0,WHOLE_ARRAY,CP_UTF8);
+   if(ArraySize(data)>0) ArrayResize(data,ArraySize(data)-1);
+
+   char result[];
+   string resultHeaders;
+
+   string headers=
+      "Content-Type: application/json\r\n"
+      "X-Tracker-Token: "+TrackerToken+"\r\n";
+
+   ResetLastError();
+   int status=WebRequest(
+      "POST",
+      ApiUrl,
+      headers,
+      10000,
+      data,
+      result,
+      resultHeaders
+   );
+
+   if(status==-1)
+   {
+      Print("WebRequest failed. Error=",GetLastError());
+      Print("Add your API domain in MT5: Tools -> Options -> Expert Advisors -> Allow WebRequest.");
+      return false;
+   }
+
+   string response=CharArrayToString(result,0,-1,CP_UTF8);
+
+   if(status<200 || status>=300)
+   {
+      Print("Server returned HTTP ",status,": ",response);
+      return false;
+   }
+
+   Print("MT5 Tracker sync OK. HTTP ",status);
+   return true;
+}
+
+int OnInit()
+{
+   EventSetTimer(MathMax(5,SyncSeconds));
+   SendSnapshot();
+   return INIT_SUCCEEDED;
+}
+
+void OnDeinit(const int reason)
+{
+   EventKillTimer();
+}
+
+void OnTimer()
+{
+   SendSnapshot();
+}
+
+void OnTradeTransaction(
+   const MqlTradeTransaction &trans,
+   const MqlTradeRequest &request,
+   const MqlTradeResult &result)
+{
+   if(trans.type==TRADE_TRANSACTION_DEAL_ADD)
+      SendSnapshot();
+}
+`;
+}
+
+function getBridgeTemplate(tokenVal, apiUrlVal){
+  return `import os
+import sys
+import time
+import json
+import urllib.request
+from datetime import datetime, timedelta, timezone
+import MetaTrader5 as mt5
+
+TRACKER_TOKEN = '${tokenVal}'
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'accounts_config.json')
+TARGET_URLS = [
+    '${apiUrlVal}/api/mt5/ingest'
+]
+
+def sync_once():
+    if not mt5.initialize():
+        print('[Bridge] MT5 initialize failed')
+        return False
+
+    acc = mt5.account_info()
+    if not acc:
+        print('[Bridge] Failed to get account info')
+        mt5.shutdown()
+        return False
+
+    acc_dict = acc._asdict()
+    login = acc_dict.get('login', 0)
+    company = acc_dict.get('company', 'Unknown')
+    currency = acc_dict.get('currency', 'USD')
+    balance = acc_dict.get('balance', 0.0)
+    equity = acc_dict.get('equity', 0.0)
+    profit = acc_dict.get('profit', 0.0)
+    margin = acc_dict.get('margin', 0.0)
+    margin_free = acc_dict.get('margin_free', 0.0)
+
+    from_date = datetime.now(timezone.utc) - timedelta(days=30)
+    deals = mt5.history_deals_get(from_date, datetime.now(timezone.utc)) or []
+
+    pos_entries = {}
+    for d in deals:
+        dd = d._asdict()
+        pid = dd.get('position_id')
+        entry = dd.get('entry')
+        if pid and entry in (0, 2):
+            pos_entries[pid] = dd
+
+    trades_payload = []
+    for d in deals:
+        dd = d._asdict()
+        dtype = dd.get('type')
+        entry = dd.get('entry')
+        if dtype not in (0, 1):
+            continue
+        if entry == 1:
+            pid = dd.get('position_id', 0)
+            in_deal = pos_entries.get(pid, {})
+            entry_price = in_deal.get('price', 0.0)
+            open_time_dt = datetime.fromtimestamp(in_deal.get('time', dd.get('time')), timezone.utc)
+            close_time_dt = datetime.fromtimestamp(dd.get('time'), timezone.utc)
+
+            side = 'BUY' if dtype == 1 else 'SELL'
+            reason = dd.get('reason', 0)
+            reason_map = {0: 'CLIENT', 1: 'MOBILE', 2: 'WEB', 3: 'EXPERT', 4: 'SL', 5: 'TP', 6: 'SO'}
+            close_reason = reason_map.get(reason, 'MANUAL')
+
+            trades_payload.append({
+                'ticket': dd.get('ticket'),
+                'position_id': pid,
+                'open_time': open_time_dt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'close_time': close_time_dt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'symbol': dd.get('symbol', ''),
+                'side': side,
+                'volume': float(dd.get('volume', 0)),
+                'entry_price': float(entry_price),
+                'exit_price': float(dd.get('price', 0)),
+                'sl': 0.0,
+                'tp': 0.0,
+                'rr': 0.0,
+                'profit': float(dd.get('profit', 0)),
+                'commission': float(dd.get('commission', 0)),
+                'swap': float(dd.get('swap', 0)),
+                'source': 'EA' if reason == 3 else 'MANUAL',
+                'strategy': '',
+                'magic': dd.get('magic', 0),
+                'close_reason': close_reason
+            })
+
+    mt5.shutdown()
+
+    payload = {
+        'account': {
+            'broker': company,
+            'login': login,
+            'currency': currency
+        },
+        'snapshot': {
+            'balance': balance,
+            'equity': equity,
+            'floating_pnl': profit,
+            'margin': margin,
+            'free_margin': margin_free
+        },
+        'trades': trades_payload[-150:]
+    }
+
+    data_bytes = json.dumps(payload).encode('utf-8')
+
+    token_to_use = TRACKER_TOKEN
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                cfg = json.load(f)
+                token_to_use = cfg.get('accounts', {}).get(str(login)) or cfg.get('default_token') or TRACKER_TOKEN
+        except Exception as ce:
+            print(f'[Bridge] Error reading config: {ce}')
+
+    for url in TARGET_URLS:
+        req = urllib.request.Request(
+            url,
+            data=data_bytes,
+            headers={
+                'Content-Type': 'application/json',
+                'x-tracker-token': token_to_use
+            }
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                body = resp.read().decode('utf-8')
+                print(f'[Bridge] Successfully synced account {login} to {url}: {body}')
+        except Exception as e:
+            print(f'[Bridge] Error posting to {url}: {e}')
+
+    try:
+        with open("bridge.log", "w") as f:
+            f.write(f"Last sync: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')} - OK (Synced {len(trades_payload[-150:])} trades)\\n")
+    except Exception:
+        pass
+
+    return True
+
+if __name__ == '__main__':
+    print('[Bridge] Starting MT5 auto-sync bridge daemon...', flush=True)
+    while True:
+        try:
+            sync_once()
+        except Exception as ex:
+            print(f'[Bridge] Loop error: {ex}', flush=True)
+        time.sleep(10)
+`;
+}
+
+function downloadPreconfiguredEA(customToken){
+  const t = customToken || latestCreatedToken;
+  if(!t){
+    alert("Token not available. Click 'Regenerate Token' in Setup.");
+    return;
+  }
+  const cleanName = (latestCreatedName || "Account").replace(/[^a-zA-Z0-9_-]/g, "_");
+  const content = getEATemplate(t, API_BASE);
+  downloadFile("MT5Tracker_" + cleanName + ".mq5", content);
+}
+
+function downloadPreconfiguredBridge(customToken){
+  const t = customToken || latestCreatedToken;
+  if(!t){
+    alert("Token not available. Click 'Regenerate Token' in Setup.");
+    return;
+  }
+  const content = getBridgeTemplate(t, API_BASE);
+  downloadFile("bridge.py", content);
+}
+
+function downloadEAForSelectedAccount(){
+  if(latestCreatedToken){
+    downloadPreconfiguredEA(latestCreatedToken);
+  } else {
+    alert("For security, tokens are generated once. If you need a fresh EA file, click 'Regenerate Token' below!");
+  }
+}
+
+function openSetupModal(){
+  const curr = accounts.find(a => a.id === selectedAccountId);
+  if(!curr) return;
+  latestCreatedName = curr.name;
+  $("setupAccName").textContent = curr.name;
+  $("setupAccBroker").textContent = curr.broker || "Waiting for MT5 sync";
+  $("setupAccLogin").textContent = curr.mt5_login || "Waiting for MT5 sync";
+  $("setupAccSync").textContent = curr.last_sync ? new Date(curr.last_sync).toLocaleString() : "Never";
+  $("regenTokenResult").classList.add("hidden");
+  $("setupModal").classList.remove("hidden");
+}
+
+function closeSetupModal(){
+  $("setupModal").classList.add("hidden");
+}
+
+async function regenerateSelectedAccountToken(){
+  if(!selectedAccountId) return;
+  if(!confirm("Are you sure? Any existing MT5 EA running with the old token will stop until updated with the new one.")) return;
+  try{
+    const data = await api("/api/accounts/" + selectedAccountId + "/regenerate-token", {
+      method:"POST", headers:authHeaders()
+    });
+    latestCreatedToken = data.trackerToken;
+    $("regenTokenText").textContent = latestCreatedToken;
+    $("regenTokenResult").classList.remove("hidden");
+    alert("New token generated! Click 'Download Updated EA' to get your ready-to-use EA file.");
+  }catch(e){ alert(e.message); }
+}
+
+function openDeleteModal(){
+  const curr = accounts.find(a => a.id === selectedAccountId);
+  if(!curr) return;
+  $("deleteAccName").textContent = curr.name;
+  $("deleteModal").classList.remove("hidden");
+}
+
+function closeDeleteModal(){
+  $("deleteModal").classList.add("hidden");
+}
+
+async function executeDeleteAccount(){
+  if(!selectedAccountId) return;
+  try{
+    await api("/api/accounts/" + selectedAccountId, {
+      method:"DELETE", headers:authHeaders()
+    });
+    closeDeleteModal();
+    selectedAccountId = null;
+    await loadAccounts();
+  }catch(e){ alert(e.message); }
 }
 
 async function loadDashboard(){
   if(!selectedAccountId) return;
   try{
-    const data=await api(`/api/accounts/${selectedAccountId}/dashboard`,{headers:authHeaders()});
+    const data=await api("/api/accounts/" + selectedAccountId + "/dashboard",{headers:authHeaders()});
     render(data);
   }catch(e){alert(e.message)}
 }
@@ -237,42 +1145,48 @@ function render({account,snapshot,trades}){
   $("winRate").textContent=(trades.length?wins.length/trades.length*100:0).toFixed(1)+"%";
   $("profitFactor").textContent=gl? (gp/gl).toFixed(2) : (gp>0?"∞":"0.00");
   $("tradeCount").textContent=trades.length;
+  $("chartTradesCount").textContent = trades.length + " trades";
 
+  const isSynced = Boolean(s.updated_at);
   $("accountInfo").innerHTML=
-    `<b>${escapeHtml(account.name)}</b><br>
-     Broker: ${escapeHtml(account.broker||"Waiting for MT5")}<br>
-     MT5 login: ${account.mt5_login||"Waiting for MT5"}<br>
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+       <b style="font-size:15px">${escapeHtml(account.name)}</b>
+       <span class="pill ${isSynced ? 'synced' : 'pending'}">${isSynced ? '● Live' : '○ Pending'}</span>
+     </div>
+     Broker: ${escapeHtml(account.broker||"Waiting for MT5 sync")}<br>
+     MT5 login: ${account.mt5_login||"Waiting for MT5 sync"}<br>
      Currency: ${escapeHtml(account.currency||"USD")}<br>
-     Last sync: ${s.updated_at?new Date(s.updated_at).toLocaleString():"Never"}`;
+     Last sync: ${s.updated_at ? new Date(s.updated_at).toLocaleString() : "Never"}`;
 
-  $("updated").textContent=s.updated_at?"Updated "+new Date(s.updated_at).toLocaleString():"Not synced yet";
+  $("updated").textContent=s.updated_at ? "Updated " + new Date(s.updated_at).toLocaleString() : "Not synced yet";
 
   $("tbody").innerHTML=trades.map(t=>`
     <tr>
       <td>${t.ticket}</td>
       <td>${t.close_time?new Date(t.close_time).toLocaleString():"-"}</td>
-      <td>${escapeHtml(t.symbol)}</td>
-      <td class="${t.side==="BUY"?"green":"red"}">${t.side}</td>
+      <td><b>${escapeHtml(t.symbol)}</b></td>
+      <td class="${t.side==="BUY"?"green":"red"}" style="font-weight:700">${t.side}</td>
       <td>${Number(t.volume||0).toFixed(2)}</td>
       <td>${Number(t.entry_price||0).toFixed(2)}</td>
       <td>${Number(t.exit_price||0).toFixed(2)}</td>
       <td>${Number(t.sl||0).toFixed(2)}</td>
       <td>${Number(t.tp||0).toFixed(2)}</td>
       <td>${Number(t.rr||0).toFixed(2)}R</td>
-      <td class="${net(t)>=0?"green":"red"}">${money(net(t))}</td>
-      <td>${escapeHtml(t.close_reason||"")}</td>
+      <td class="${net(t)>=0?"green":"red"}" style="font-weight:700">${money(net(t))}</td>
+      <td><span class="muted">${escapeHtml(t.close_reason||"")}</span></td>
     </tr>`).join("");
 
   renderChart(trades);
 }
 
 function renderEmpty(){
-  $("balance").textContent="$0";
-  $("equity").textContent="$0";
-  $("todayPnl").textContent="$0";
+  $("balance").textContent="$0.00";
+  $("equity").textContent="$0.00";
+  $("todayPnl").textContent="$0.00";
   $("winRate").textContent="0%";
   $("profitFactor").textContent="0.00";
   $("tradeCount").textContent="0";
+  $("chartTradesCount").textContent = "";
   $("tbody").innerHTML="";
   renderChart([]);
 }
@@ -288,8 +1202,8 @@ function renderChart(trades){
   if(chart) chart.destroy();
   chart=new Chart($("equityChart"),{
     type:"line",
-    data:{labels,datasets:[{data:values,borderWidth:2,tension:.25,pointRadius:1}]},
-    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#8d9ab0"},grid:{color:"rgba(255,255,255,.04)"}},y:{ticks:{color:"#8d9ab0"},grid:{color:"rgba(255,255,255,.04)"}}}}
+    data:{labels,datasets:[{data:values,borderColor:"#38bdf8",backgroundColor:"rgba(56,189,248,0.08)",fill:true,borderWidth:2,tension:.25,pointRadius:trades.length > 50 ? 0 : 2}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#8d9ab0",maxTicksLimit:8},grid:{color:"rgba(255,255,255,.04)"}},y:{ticks:{color:"#8d9ab0"},grid:{color:"rgba(255,255,255,.04)"}}}}
   });
 }
 
@@ -302,7 +1216,10 @@ function logout(){
 $("loginBtn").onclick=()=>login(false);
 $("registerBtn").onclick=()=>login(true);
 $("logoutBtn").onclick=logout;
-$("newAccountBtn").onclick=createAccount;
+$("newAccountBtn").onclick=openConnectModal;
+$("confirmCreateAccBtn").onclick=confirmCreateAccount;
+$("setupAccountBtn").onclick=openSetupModal;
+$("deleteAccountBtn").onclick=openDeleteModal;
 $("refreshBtn").onclick=loadDashboard;
 $("apiUrlBtn").onclick=promptApiUrl;
 $("authApiUrlLink").onclick=promptApiUrl;
