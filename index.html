@@ -2,230 +2,476 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MT5 PostgreSQL Tracker</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MT5 Cloud Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
-  --bg:#070b13;--p:#0e1524;--p2:#121c2d;--p3:#18253c;--b:#1d2940;--t:#f5f7fb;
-  --m:#8d9ab0;--g:#34d399;--r:#fb7185;--y:#fbbf24;--a:#60a5fa
+  --bg:#030508;
+  --panel:rgba(18, 22, 34, 0.65);
+  --panel-solid:#0d111b;
+  --panel-hover:rgba(26, 32, 48, 0.75);
+  --input-bg:rgba(255, 255, 255, 0.05);
+  --input-border:rgba(255, 255, 255, 0.09);
+  --border:rgba(255, 255, 255, 0.08);
+  --border-focus:#0a84ff;
+  --text:#ffffff;
+  --text-muted:rgba(235, 235, 245, 0.55);
+  --text-sub:rgba(235, 235, 245, 0.35);
+  --apple-blue:#0a84ff;
+  --apple-green:#30d158;
+  --apple-red:#ff453a;
+  --apple-amber:#ffd60a;
+  --glass-highlight:inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  --shadow-sm:0 4px 16px rgba(0,0,0,0.3);
+  --shadow-lg:0 20px 50px rgba(0,0,0,0.6);
+  --radius-xl:22px;
+  --radius-lg:16px;
+  --radius-md:12px;
+  --radius-sm:8px;
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--t);font-family:Inter,system-ui,-apple-system,sans-serif}
-.wrap{width:min(1450px,95%);margin:auto;padding:20px 0 50px}
-.card,.panel{background:var(--p);border:1px solid var(--b);border-radius:16px;padding:16px}
-.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-h1{font-size:20px;margin:0;letter-spacing:-0.3px}
-.muted{color:var(--m);font-size:12px}
-.btn,input,select{
-  border:1px solid var(--b);background:var(--p2);color:var(--t);
-  padding:9px 13px;border-radius:10px;font-size:13px;font-family:inherit;outline:none;
-  transition:all 0.15s ease;
+
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Plus Jakarta Sans","SF Pro Display","SF Pro Text",sans-serif;font-feature-settings:"tnum";min-height:100vh}
+
+/* Ambient glow background */
+body::before{
+  content:"";position:fixed;top:-15vw;left:15vw;width:70vw;height:45vw;
+  background:radial-gradient(circle,rgba(10,132,255,0.07) 0%,rgba(48,209,88,0.03) 40%,transparent 70%);
+  pointer-events:none;z-index:0;
 }
-.btn{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
-.btn:hover{background:var(--p3);border-color:#2b3e60}
-.btn.primary{background:#1d4ed8;border-color:#3b82f6;color:#fff;font-weight:600}
-.btn.primary:hover{background:#2563eb}
-.btn.success{background:#059669;border-color:#10b981;color:#fff;font-weight:600}
-.btn.success:hover{background:#047857}
-.btn.danger{background:#45121b;border-color:#7f1d1d;color:#fca5a5}
-.btn.danger:hover{background:#5e1823}
-.auth{max-width:420px;margin:10vh auto}
-.auth h2{margin-top:0}
-.stack{display:grid;gap:12px}
-.hidden{display:none!important}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.grow{flex:1}
-.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:12px 0}
-.label{font-size:11px;color:var(--m);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
-.value{font-size:22px;font-weight:800}
-.green{color:var(--g)}.red{color:var(--r)}.blue{color:var(--a)}
-.grid{display:grid;grid-template-columns:2.2fr 1fr;gap:12px;margin-bottom:12px}
-.chart{height:300px}
-.table{overflow:auto;border:1px solid var(--b);border-radius:12px}
-table{width:100%;border-collapse:collapse;min-width:1000px}
-th,td{padding:10px 12px;border-bottom:1px solid var(--b);font-size:12px;text-align:left}
-th{color:var(--m);background:#0a111d;font-weight:600}
-.notice{padding:12px 14px;border-radius:10px;background:#111d31;border:1px solid var(--b);font-size:12px;line-height:1.5}
-.token{word-break:break-all;font-family:ui-monospace,monospace}
-.copy-pill{
-  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
-  border-radius:7px;background:#172844;border:1px solid var(--b);
-  color:var(--a);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
+body::after{
+  content:"";position:fixed;bottom:-20vw;right:-10vw;width:60vw;height:50vw;
+  background:radial-gradient(circle,rgba(191,90,242,0.04) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
 }
-.copy-pill:hover{background:#1e355c;color:#fff}
-.code-box{
-  background:#080d16;border:1px solid var(--b);border-radius:8px;padding:8px 12px;
-  font-family:ui-monospace,monospace;font-size:12px;color:#cbd5e1;display:flex;
-  align-items:center;justify-content:space-between;gap:8px;
+
+.wrap{
+  position:relative;z-index:1;width:min(1420px,94%);margin:auto;
+  padding:max(16px,env(safe-area-inset-top)) 0 max(40px,env(safe-area-inset-bottom));
 }
-.pill{
-  display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;
-  font-size:11px;font-weight:600;
+
+/* Apple Liquid Glass Panels */
+.glass{
+  background:var(--panel);
+  backdrop-filter:blur(28px) saturate(190%);
+  -webkit-backdrop-filter:blur(28px) saturate(190%);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm),var(--glass-highlight);
+  border-radius:var(--radius-xl);
+  padding:20px;
+  transition:border-color 0.2s ease,box-shadow 0.2s ease;
 }
-.pill.synced{background:#0e281e;color:var(--g);border:1px solid #1c523c}
-.pill.pending{background:#231a0e;color:var(--y);border:1px solid #5a3f12}
-/* Modal styles */
+
+/* Header & Nav */
+.header{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:16px;margin-bottom:20px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{
+  width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,#0a84ff 0%,#0055d4 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:0 4px 14px rgba(10,132,255,0.4);
+}
+.brand-title{font-size:18px;font-weight:700;letter-spacing:-0.4px;margin:0}
+.brand-status{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:2px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--apple-green);box-shadow:0 0 8px var(--apple-green)}
+
+/* Nav Controls */
+.nav-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.account-pill-group{
+  display:flex;align-items:center;background:var(--input-bg);
+  border:1px solid var(--input-border);border-radius:var(--radius-md);
+  padding:3px;gap:4px;
+}
+select.account-select{
+  background:transparent;border:none;color:#fff;
+  padding:6px 10px;font-size:13px;font-weight:600;outline:none;
+  cursor:pointer;max-width:260px;text-overflow:ellipsis;
+  font-family:inherit;
+}
+select.account-select option{background:#0e1320;color:#fff}
+
+/* Apple Buttons */
+.btn{
+  border:1px solid var(--border);background:var(--input-bg);color:var(--text);
+  padding:8px 14px;border-radius:var(--radius-md);font-size:12.5px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:all 0.18s cubic-bezier(0.16,1,0.3,1);font-family:inherit;outline:none;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.btn:hover{background:var(--panel-hover);border-color:rgba(255,255,255,0.16)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{
+  background:linear-gradient(180deg,#0a84ff 0%,#0071e3 100%);
+  border-color:rgba(255,255,255,0.2);color:#fff;
+  box-shadow:0 4px 14px rgba(10,132,255,0.35);
+}
+.btn-primary:hover{background:linear-gradient(180deg,#208eff 0%,#0a84ff 100%)}
+.btn-success{
+  background:linear-gradient(180deg,#30d158 0%,#24a844 100%);
+  border-color:rgba(255,255,255,0.2);color:#022409;font-weight:700;
+  box-shadow:0 4px 14px rgba(48,209,88,0.3);
+}
+.btn-success:hover{background:linear-gradient(180deg,#3fe067 0%,#30d158 100%)}
+.btn-danger{
+  background:rgba(255,69,58,0.1);border-color:rgba(255,69,58,0.25);
+  color:var(--apple-red);
+}
+.btn-danger:hover{background:rgba(255,69,58,0.2)}
+.btn-icon{padding:8px 10px;font-size:13px}
+
+/* Metrics Grid (Apple Cards) */
+.metrics-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  gap:12px;margin-bottom:16px;
+}
+.metric-card{
+  background:var(--panel);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm),var(--glass-highlight);
+  border-radius:var(--radius-lg);
+  padding:16px 18px;
+  position:relative;overflow:hidden;
+  transition:transform 0.2s ease,border-color 0.2s ease;
+}
+.metric-card:hover{border-color:rgba(255,255,255,0.15)}
+.metric-label{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.07em;color:var(--text-muted);margin-bottom:6px;
+}
+.metric-value{
+  font-size:24px;font-weight:800;letter-spacing:-0.6px;
+  font-variant-numeric:tabular-nums;line-height:1.15;
+}
+.val-green{color:var(--apple-green)}
+.val-red{color:var(--apple-red)}
+.val-blue{color:var(--apple-blue)}
+
+/* Content Grid (Chart + Account Card) */
+.main-grid{
+  display:grid;grid-template-columns:2.5fr 1fr;
+  gap:16px;margin-bottom:16px;
+}
+.chart-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;flex-wrap:wrap;gap:8px;
+}
+.chart-title{font-size:15px;font-weight:700;letter-spacing:-0.2px}
+.chart-container{height:280px;position:relative}
+
+/* Account Info Card */
+.account-detail-box{
+  display:flex;flex-direction:column;gap:12px;height:100%;justify-content:space-between;
+}
+.account-info-header{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+}
+.account-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;
+}
+.badge-live{background:rgba(48,209,88,0.12);color:var(--apple-green);border:1px solid rgba(48,209,88,0.25)}
+.badge-pending{background:rgba(255,214,10,0.12);color:var(--apple-amber);border:1px solid rgba(255,214,10,0.25)}
+.detail-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12.5px}
+.detail-item:last-child{border-bottom:none}
+.detail-k{color:var(--text-muted)}
+.detail-v{font-weight:600;color:#fff}
+
+/* Trades Table Glass */
+.table-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;flex-wrap:wrap;gap:8px;
+}
+.table-wrap{
+  overflow-x:auto;border-radius:var(--radius-lg);
+  border:1px solid rgba(255,255,255,0.05);
+}
+table{width:100%;border-collapse:collapse;min-width:920px;font-size:12.5px}
+th{
+  text-align:left;padding:11px 14px;color:var(--text-muted);
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+  background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);
+}
+td{
+  padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-variant-numeric:tabular-nums;color:#fff;
+}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.side-pill{
+  display:inline-block;padding:2px 7px;border-radius:6px;
+  font-size:10.5px;font-weight:800;letter-spacing:0.04em;
+}
+.side-buy{background:rgba(48,209,88,0.15);color:var(--apple-green)}
+.side-sell{background:rgba(255,69,58,0.15);color:var(--apple-red)}
+
+/* Apple Modal Windows */
 .modal-backdrop{
   position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:rgba(4,7,13,0.75);backdrop-filter:blur(4px);
+  background:rgba(0,0,0,0.65);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
   display:flex;align-items:center;justify-content:center;
   z-index:9999;padding:16px;
+  animation:fadeIn 0.15s ease-out;
 }
 .modal-box{
-  background:var(--p);border:1px solid var(--b);border-radius:16px;
-  width:min(540px,100%);max-height:92vh;overflow-y:auto;
-  box-shadow:0 25px 50px -12px rgba(0,0,0,0.7);padding:22px;
+  background:rgba(22, 26, 38, 0.88);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:24px;width:min(520px,100%);max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg),var(--glass-highlight);
+  padding:24px;animation:scaleIn 0.2s cubic-bezier(0.16,1,0.3,1);
 }
-.modal-header{
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+
+.modal-head{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:16px;border-bottom:1px solid var(--b);padding-bottom:12px;
+  margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;
 }
-.modal-header h3{margin:0;font-size:17px;font-weight:700}
+.modal-head h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-0.3px}
 .close-btn{
-  background:none;border:none;color:var(--m);font-size:22px;cursor:pointer;line-height:1;
+  width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);
+  border:none;color:var(--text-muted);font-size:18px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;transition:all 0.15s ease;
 }
-.close-btn:hover{color:var(--t)}
-@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:800px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+.close-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
+
+/* Input Fields (Apple Style) */
+input[type="text"],input[type="number"],input[type="password"],input[type="email"],select.apple-input{
+  width:100%;border:1px solid var(--input-border);background:var(--input-bg);
+  color:#fff;padding:11px 14px;border-radius:var(--radius-md);font-size:13.5px;
+  font-family:inherit;outline:none;transition:all 0.18s ease;
+}
+input:focus,select.apple-input:focus{
+  border-color:var(--apple-blue);background:rgba(255,255,255,0.08);
+  box-shadow:0 0 0 3px rgba(10,132,255,0.25);
+}
+
+/* Auth Card */
+.auth-box{max-width:380px;margin:12vh auto;padding:28px}
+.auth-box h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-0.5px}
+
+.stack{display:grid;gap:12px}
+.hidden{display:none!important}
+.row{display:flex;gap:8px;align-items:center}
+.grow{flex:1}
+
+/* Mobile & Tablet Responsiveness */
+@media(max-width:1024px){
+  .metrics-grid{grid-template-columns:repeat(3,1fr)}
+  .main-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .wrap{width:92%;padding-top:12px}
+  .header{flex-direction:column;align-items:stretch;gap:12px}
+  .nav-actions{justify-content:space-between}
+  .account-pill-group{width:100%;justify-content:space-between}
+  select.account-select{max-width:none;flex:1}
+  .metrics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .metric-card{padding:12px 14px}
+  .metric-value{font-size:20px}
+  .chart-container{height:230px}
+  .modal-box{padding:18px;border-radius:20px}
+}
+@media(max-width:380px){
+  .metrics-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div id="authView" class="auth card">
-    <h2>MT5 Tracker</h2>
-    <div class="muted" style="margin-bottom:14px">Login to view your MT5 accounts and trading analytics.</div>
-    <div class="stack">
-      <input id="email" type="email" placeholder="Email (e.g. trader@example.com)">
-      <input id="password" type="password" placeholder="Password (8+ characters)">
-      <div class="row">
-        <button class="btn primary grow" id="loginBtn">Login</button>
-        <button class="btn grow" id="registerBtn">Register</button>
+  <!-- Auth Screen (Apple Minimalist) -->
+  <div id="authView" class="auth-box glass">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div class="brand-logo">📊</div>
+      <div>
+        <h2>MT5 Tracker</h2>
+        <div class="muted" style="color:var(--text-muted);font-size:12px">Sign in to your trading dashboard</div>
       </div>
-      <div id="authMsg" class="muted"></div>
-      <div style="margin-top:8px;font-size:11px;text-align:center">
-        <a href="javascript:void(0)" id="authApiUrlLink" style="color:var(--a);text-decoration:none">⚙️ Backend API: <span id="currentApiDisplay"></span></a>
+    </div>
+    <div class="stack">
+      <input id="email" type="email" placeholder="Email address">
+      <input id="password" type="password" placeholder="Password (8+ chars)">
+      <div class="row" style="margin-top:4px">
+        <button class="btn btn-primary grow" id="loginBtn" style="padding:11px">Sign In</button>
+        <button class="btn grow" id="registerBtn" style="padding:11px">Create Account</button>
+      </div>
+      <div id="authMsg" style="font-size:12px;color:var(--apple-red);text-align:center"></div>
+      <div style="margin-top:6px;text-align:center">
+        <a href="javascript:void(0)" id="authApiUrlLink" style="color:var(--apple-blue);font-size:11.5px;text-decoration:none">
+          ⚙️ Backend API: <span id="currentApiDisplay"></span>
+        </a>
       </div>
     </div>
   </div>
 
+  <!-- Main Dashboard App -->
   <div id="appView" class="hidden">
-    <div class="top">
-      <div>
-        <h1 style="display:flex;align-items:center;gap:8px">
-          📊 MT5 Cloud Tracker
-        </h1>
-        <div class="muted">Connected to: <span id="topApiDisplay" style="color:var(--g)"></span></div>
-      </div>
-      <div class="row">
-        <div style="display:flex;align-items:center;gap:6px">
-          <select id="accountSelect" style="min-width:240px;max-width:340px;text-overflow:ellipsis"></select>
-          <button class="btn" id="setupAccountBtn" title="Account Setup & Token">🔑 Setup</button>
-          <button class="btn danger" id="deleteAccountBtn" title="Delete Account" style="padding:9px 11px">🗑️</button>
+    <!-- Apple Glass Header -->
+    <header class="header glass" style="padding:14px 18px">
+      <div class="brand">
+        <div class="brand-logo">📊</div>
+        <div>
+          <h1 class="brand-title">Trade Tracker</h1>
+          <div class="brand-status">
+            <span class="status-dot"></span>
+            <span>Cloud Connected</span>
+            <span style="opacity:0.35">·</span>
+            <span id="topApiDisplay" style="color:var(--text-muted);font-size:11px"></span>
+          </div>
         </div>
-        <button class="btn primary" id="newAccountBtn">+ Add Account</button>
-        <button class="btn" id="refreshBtn">🔄 Refresh</button>
-        <button class="btn" id="apiUrlBtn">⚙️ API</button>
-        <button class="btn danger" id="logoutBtn">Logout</button>
       </div>
-    </div>
-
-    <!-- Quick Stats Cards -->
-    <div class="cards">
-      <div class="card"><div class="label">Balance</div><div class="value" id="balance">$0.00</div></div>
-      <div class="card"><div class="label">Equity</div><div class="value" id="equity">$0.00</div></div>
-      <div class="card"><div class="label">Today P&L</div><div class="value" id="todayPnl">$0.00</div></div>
-      <div class="card"><div class="label">Win Rate</div><div class="value" id="winRate">0%</div></div>
-      <div class="card"><div class="label">Profit Factor</div><div class="value" id="profitFactor">0.00</div></div>
-      <div class="card"><div class="label">Closed Trades</div><div class="value" id="tradeCount">0</div></div>
-    </div>
-
-    <!-- Chart & Account Info -->
-    <div class="grid">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-weight:700">Cumulative Net Profit Curve</div>
-          <div class="muted" id="chartTradesCount"></div>
+      
+      <div class="nav-actions">
+        <div class="account-pill-group">
+          <select id="accountSelect" class="account-select"></select>
+          <button class="btn btn-icon" id="setupAccountBtn" title="Account Credentials">🔑</button>
+          <button class="btn btn-danger btn-icon" id="deleteAccountBtn" title="Delete Account">🗑️</button>
         </div>
-        <div class="chart"><canvas id="equityChart"></canvas></div>
+        <button class="btn btn-primary" id="newAccountBtn">+ Add Account</button>
+        <button class="btn" id="refreshBtn" title="Refresh">🔄</button>
+        <button class="btn" id="apiUrlBtn" title="API Settings">⚙️</button>
+        <button class="btn btn-danger" id="logoutBtn">Logout</button>
       </div>
-      <div class="panel">
-        <div style="font-weight:700;margin-bottom:10px">Active Account</div>
-        <div id="accountInfo" class="notice">No account data yet.</div>
+    </header>
+
+    <!-- Metrics Grid -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Account Balance</div>
+        <div class="metric-value" id="balance">$0.00</div>
       </div>
-    </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Equity</div>
+        <div class="metric-value" id="equity">$0.00</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Today's P&L</div>
+        <div class="metric-value val-green" id="todayPnl">$0.00</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Win Rate</div>
+        <div class="metric-value" id="winRate">0.0%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Profit Factor</div>
+        <div class="metric-value" id="profitFactor">0.00</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Closed Deals</div>
+        <div class="metric-value val-blue" id="tradeCount">0</div>
+      </div>
+    </section>
+
+    <!-- Main Grid: Chart + Account Card -->
+    <section class="main-grid">
+      <div class="glass">
+        <div class="chart-header">
+          <div class="chart-title">Net Cumulative Performance</div>
+          <div style="font-size:12px;color:var(--text-muted)" id="chartTradesCount"></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="equityChart"></canvas>
+        </div>
+      </div>
+
+      <div class="glass account-detail-box">
+        <div>
+          <div class="account-info-header">
+            <div style="font-size:15px;font-weight:700" id="accCardTitle">Account Info</div>
+            <span class="account-badge badge-live" id="accStatusBadge">● Live</span>
+          </div>
+          <div style="margin-top:14px" id="accountDetailsList">
+            <div class="detail-item"><span class="detail-k">Broker</span><span class="detail-v" id="cardBroker">—</span></div>
+            <div class="detail-item"><span class="detail-k">Server</span><span class="detail-v" id="cardServer">—</span></div>
+            <div class="detail-item"><span class="detail-k">Login ID</span><span class="detail-v" id="cardLogin">—</span></div>
+            <div class="detail-item"><span class="detail-k">Currency</span><span class="detail-v" id="cardCurrency">USD</span></div>
+            <div class="detail-item"><span class="detail-k">Last Sync</span><span class="detail-v" id="cardSync">—</span></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-sub);text-align:right" id="updatedTimestamp">
+          Waiting for MT5 sync...
+        </div>
+      </div>
+    </section>
 
     <!-- Trade History Table -->
-    <div class="panel">
-      <div class="row" style="justify-content:space-between;margin-bottom:10px">
-        <div><b>Trade History</b><div class="muted" id="updated">Not updated</div></div>
+    <section class="glass">
+      <div class="table-header">
+        <div style="font-size:15px;font-weight:700">Recent Deals History</div>
+        <div style="font-size:11.5px;color:var(--text-muted)">Real-time synced from MetaTrader 5</div>
       </div>
-      <div class="table">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Ticket</th><th>Close Time</th><th>Symbol</th><th>Side</th>
               <th>Lots</th><th>Entry</th><th>Exit</th><th>SL</th><th>TP</th>
-              <th>RR</th><th>Net P&L</th><th>Exit Reason</th>
+              <th>RR</th><th>Net Profit</th><th>Reason</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
-    </div>
+    </section>
   </div>
-
 </div>
 
-<!-- MODAL: Connect MT5 Account (Login Style) -->
+<!-- Apple Modal: Connect MT5 Account -->
 <div id="connectModal" class="modal-backdrop hidden">
   <div class="modal-box">
-    <div class="modal-header">
-      <h3 style="display:flex;align-items:center;gap:6px">
-        <span>🔐 Connect MT5 Account</span>
-      </h3>
+    <div class="modal-head">
+      <h3 style="display:flex;align-items:center;gap:8px">🔐 Connect MT5 Account</h3>
       <button class="close-btn" onclick="closeConnectModal()">&times;</button>
     </div>
 
     <!-- 1-Click Auto-Detect Card -->
-    <div style="background:linear-gradient(135deg,#0c251a 0%,#133324 100%);border:1px solid #1c523c;padding:16px;border-radius:12px;margin-bottom:16px">
+    <div style="background:rgba(48,209,88,0.08);border:1px solid rgba(48,209,88,0.22);padding:16px;border-radius:var(--radius-lg);margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
         <div>
-          <div style="font-weight:700;color:var(--g);font-size:14px">⚡ 1-Click Auto-Detect from MT5</div>
-          <div class="muted" style="color:#a7f3d0;font-size:11.5px;margin-top:2px">
+          <div style="font-weight:700;color:var(--apple-green);font-size:13.5px">⚡ 1-Click Auto-Detect from MT5</div>
+          <div style="color:var(--text-muted);font-size:11.5px;margin-top:2px">
             If MT5 is running on your PC, click to link your account instantly!
           </div>
         </div>
-        <button class="btn success" id="autoDetectBtn" onclick="autoDetectAccount()">
-          ⚡ Auto-Detect Now
+        <button class="btn btn-success" id="autoDetectBtn" onclick="autoDetectAccount()">
+          ⚡ Auto-Detect
         </button>
       </div>
-      <div id="autoDetectMsg" class="muted" style="margin-top:8px;font-size:12px;color:var(--y)"></div>
+      <div id="autoDetectMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
-      <div style="flex:1;height:1px;background:var(--b)"></div>
-      <span class="muted" style="font-size:11px;letter-spacing:1px;font-weight:700">OR LOGIN LIKE IN MT5</span>
-      <div style="flex:1;height:1px;background:var(--b)"></div>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
+      <span style="font-size:10px;letter-spacing:1px;font-weight:700;color:var(--text-sub)">OR LOGIN LIKE IN MT5</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
     </div>
 
     <!-- MT5 Credentials Form -->
     <div class="stack" id="credForm">
       <div>
-        <div class="label">Account Nickname (Optional):</div>
+        <div class="metric-label" style="margin-bottom:4px">Account Label (Optional)</div>
         <input id="credName" type="text" placeholder="e.g. RoboForex Real, FTMO Challenge">
       </div>
 
       <div>
-        <div class="label">MT5 Login / Account Number: <span style="color:var(--r)">*</span></div>
+        <div class="metric-label" style="margin-bottom:4px">MT5 Login / Account Number <span style="color:var(--apple-red)">*</span></div>
         <input id="credLogin" type="number" placeholder="e.g. 37399837" autofocus>
       </div>
 
       <div>
-        <div class="label">Broker Server: <span style="color:var(--r)">*</span></div>
+        <div class="metric-label" style="margin-bottom:4px">Broker Server <span style="color:var(--apple-red)">*</span></div>
         <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:8px">
-          <select id="credServerSelect" onchange="handleServerSelectChange(this)">
+          <select id="credServerSelect" class="apple-input" onchange="handleServerSelectChange(this)">
             <option value="RoboForex-Pro">RoboForex-Pro</option>
             <option value="RoboForex-ECN">RoboForex-ECN</option>
             <option value="RoboForex-Demo">RoboForex-Demo</option>
@@ -234,67 +480,54 @@ th{color:var(--m);background:#0a111d;font-weight:600}
             <option value="MetaQuotes-Demo">MetaQuotes-Demo</option>
             <option value="Exness-Real">Exness-Real</option>
             <option value="ICMarkets-Real">ICMarkets-Real</option>
-            <option value="custom">Other...</option>
+            <option value="custom">Other Server...</option>
           </select>
           <input id="credServerInput" type="text" placeholder="Server name" value="RoboForex-Pro">
         </div>
       </div>
 
       <div>
-        <div class="label">Investor Password (Read-Only):</div>
+        <div class="metric-label" style="margin-bottom:4px">Investor Password (Read-Only)</div>
         <input id="credPassword" type="password" placeholder="••••••••••••">
-        <div class="muted" style="font-size:11px;margin-top:4px">
-          🔒 <b>100% Safe:</b> You can use your broker's read-only investor password. It cannot place orders.
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+          🔒 <b>100% Safe:</b> Use your broker's read-only investor password. It cannot execute trades.
         </div>
       </div>
 
-      <div id="credMsg" class="muted" style="font-size:12px"></div>
+      <div id="credMsg" style="font-size:12px"></div>
 
-      <div class="row" style="margin-top:6px">
-        <button class="btn primary grow" id="connectCredBtn" style="padding:11px 16px;font-size:13.5px" onclick="connectWithCredentials()">
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-primary grow" id="connectCredBtn" style="padding:11px 16px" onclick="connectWithCredentials()">
           🚀 Connect Account
         </button>
         <button class="btn" onclick="closeConnectModal()">Cancel</button>
       </div>
-
-      <div style="text-align:center;margin-top:6px">
-        <a href="javascript:void(0)" onclick="toggleAdvancedEA()" style="color:var(--m);font-size:11.5px;text-decoration:none">
-          ⚙️ Advanced: Download Expert Advisor (.mq5) instead
-        </a>
-      </div>
-    </div>
-
-    <!-- Optional EA download for remote VPS users -->
-    <div id="advancedEABox" class="stack hidden" style="border-top:1px solid var(--b);padding-top:14px;margin-top:14px">
-      <div style="font-weight:700;font-size:13px">MetaTrader 5 Expert Advisor</div>
-      <div class="muted" style="font-size:12px">If running MT5 on a remote VPS without Python, you can download the standalone EA:</div>
-      <button class="btn" onclick="downloadPreconfiguredEA(latestCreatedToken)">⬇️ Download MT5Tracker.mq5</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: Account Setup & Credentials -->
+<!-- Apple Modal: Setup & Account Credentials -->
 <div id="setupModal" class="modal-backdrop hidden">
   <div class="modal-box">
-    <div class="modal-header">
+    <div class="modal-head">
       <h3>Account Credentials & Details</h3>
       <button class="close-btn" onclick="closeSetupModal()">&times;</button>
     </div>
     
     <div class="stack">
-      <div class="notice">
-        <b>Account:</b> <span id="setupAccName"></span><br>
-        <b>Broker / Server:</b> <span id="setupAccBroker"></span><br>
-        <b>MT5 Login:</b> <span id="setupAccLogin"></span><br>
-        <b>Last Sync:</b> <span id="setupAccSync"></span>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;font-size:13px;line-height:1.7">
+        <b id="setupAccName"></b><br>
+        <span style="color:var(--text-muted)">Broker / Server:</span> <span id="setupAccBroker"></span><br>
+        <span style="color:var(--text-muted)">MT5 Login:</span> <span id="setupAccLogin"></span><br>
+        <span style="color:var(--text-muted)">Last Synced:</span> <span id="setupAccSync"></span>
       </div>
 
-      <div style="border-top:1px solid var(--b);padding-top:12px;margin-top:4px">
-        <div style="font-weight:700;font-size:13px;color:var(--y);margin-bottom:4px">Reset Connection Key</div>
-        <div class="muted" style="font-size:11.5px;margin-bottom:8px">
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+        <div style="font-weight:700;font-size:13px;color:var(--apple-amber);margin-bottom:4px">Reset Connection Key</div>
+        <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:8px">
           If you need a new secure token for this account:
         </div>
-        <button class="btn" style="border-color:var(--y);color:var(--y)" id="regenerateBtn" onclick="regenerateSelectedAccountToken()">
+        <button class="btn" style="border-color:rgba(255,214,10,0.3);color:var(--apple-amber)" id="regenerateBtn" onclick="regenerateSelectedAccountToken()">
           🔄 Generate New Token
         </button>
         <div id="regenTokenResult" class="stack hidden" style="margin-top:10px">
@@ -305,30 +538,30 @@ th{color:var(--m);background:#0a111d;font-weight:600}
         </div>
       </div>
 
-      <div class="row" style="margin-top:10px;justify-content:flex-end">
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
         <button class="btn" onclick="closeSetupModal()">Close</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL: Delete Account Confirmation -->
+<!-- Apple Modal: Delete Account Confirmation -->
 <div id="deleteModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:440px">
-    <div class="modal-header">
-      <h3 style="color:var(--r)">Delete Account</h3>
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head">
+      <h3 style="color:var(--apple-red)">Delete Account</h3>
       <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
     </div>
     <div class="stack">
-      <p style="font-size:13px;line-height:1.5;margin:0">
+      <p style="font-size:13.5px;line-height:1.5;margin:0">
         Are you sure you want to delete <b id="deleteAccName"></b>?
       </p>
-      <div class="notice" style="border-color:#5c1d24;background:#240e13;color:#fca5a5;font-size:12px">
-        ⚠️ This will permanently remove this account, its trade snapshots, and all recorded trade history.
+      <div style="background:rgba(255,69,58,0.08);border:1px solid rgba(255,69,58,0.2);color:var(--apple-red);padding:12px;border-radius:var(--radius-md);font-size:12px">
+        ⚠️ This will permanently remove this account and all its recorded trade snapshots.
       </div>
-      <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <div class="row" style="margin-top:14px;justify-content:flex-end">
         <button class="btn" onclick="closeDeleteModal()">Cancel</button>
-        <button class="btn danger" id="confirmDeleteBtn" onclick="executeDeleteAccount()">Delete Permanently</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn" onclick="executeDeleteAccount()">Delete Permanently</button>
       </div>
     </div>
   </div>
@@ -351,9 +584,9 @@ let API_BASE = getApiBase();
 
 function updateApiDisplay() {
   const disp = $("currentApiDisplay");
-  if (disp) disp.textContent = API_BASE || "Not configured (Click to set)";
+  if (disp) disp.textContent = API_BASE || "Not configured";
   const topDisp = $("topApiDisplay");
-  if (topDisp) topDisp.textContent = API_BASE || "Not configured";
+  if (topDisp) topDisp.textContent = API_BASE ? API_BASE.replace(/^https?:\/\//, "") : "Not configured";
 }
 
 function promptApiUrl() {
@@ -378,7 +611,6 @@ let accounts = [];
 let selectedAccountId = null;
 let chart = null;
 let latestCreatedToken = "";
-let latestCreatedName = "";
 
 const $ = id => document.getElementById(id);
 const money = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n||0));
@@ -387,7 +619,7 @@ const authHeaders = () => ({ "Content-Type":"application/json", "Authorization":
 async function api(path, options={}){
   if (!API_BASE) {
     promptApiUrl();
-    if (!API_BASE) throw new Error("Backend API URL is required. Click ⚙️ API URL to set it.");
+    if (!API_BASE) throw new Error("Backend API URL is required. Click ⚙️ to set it.");
   }
   try {
     const res = await fetch(API_BASE + path, options);
@@ -401,7 +633,7 @@ async function api(path, options={}){
     return data;
   } catch (err) {
     if (err.name === "TypeError" && err.message.includes("fetch")) {
-      throw new Error("Cannot reach backend server. If Render was asleep, please wait 30s and click Refresh.");
+      throw new Error("Cannot reach server. If Render was asleep, please wait 20s and click 🔄.");
     }
     throw err;
   }
@@ -436,7 +668,7 @@ async function loadAccounts(){
       select.innerHTML = accounts.map(a => {
         const hasBal = a.balance !== null && a.balance !== undefined;
         const balText = hasBal ? ' · ' + money(a.balance) : ' · (Pending)';
-        const brokerText = (a.broker || a.server) && a.mt5_login ? ' · ' + (a.broker || a.server) + ' #' + a.mt5_login : '';
+        const brokerText = (a.server || a.broker) && a.mt5_login ? ' · ' + (a.server || a.broker) + ' #' + a.mt5_login : '';
         return '<option value="' + a.id + '">' + escapeHtml(a.name) + escapeHtml(brokerText) + escapeHtml(balText) + '</option>';
       }).join('');
 
@@ -452,7 +684,11 @@ async function loadAccounts(){
       select.innerHTML = '<option value="">(No accounts connected)</option>';
       $("setupAccountBtn").disabled = true;
       $("deleteAccountBtn").disabled = true;
-      $("accountInfo").innerHTML = "No MT5 account connected yet. Click <b>+ Add Account</b> to connect your MT5 terminal in 1 click.";
+      $("accCardTitle").textContent = "No Account";
+      $("cardBroker").textContent = "—";
+      $("cardServer").textContent = "—";
+      $("cardLogin").textContent = "—";
+      $("cardSync").textContent = "—";
       renderEmpty();
     }
   }catch(e){
@@ -467,7 +703,6 @@ function openConnectModal(){
   $("credName").value = "";
   $("credMsg").textContent = "";
   $("autoDetectMsg").textContent = "";
-  $("advancedEABox").classList.add("hidden");
   $("connectModal").classList.remove("hidden");
   setTimeout(()=> $("credLogin").focus(), 100);
 }
@@ -486,20 +721,17 @@ function handleServerSelectChange(sel){
   }
 }
 
-function toggleAdvancedEA(){
-  $("advancedEABox").classList.toggle("hidden");
-}
-
 async function autoDetectAccount(){
   const msg = $("autoDetectMsg");
   const btn = $("autoDetectBtn");
   btn.disabled = true;
+  msg.style.color = "var(--text-muted)";
   msg.textContent = "Scanning active MT5 terminal on your PC...";
   try{
     const data = await api("/api/accounts/auto-detect", {
       method:"POST", headers:authHeaders()
     });
-    msg.style.color = "var(--g)";
+    msg.style.color = "var(--apple-green)";
     msg.textContent = "✅ Found " + (data.account.name || data.account.broker) + " #" + data.account.mt5_login + " (" + money(data.account.balance) + ")!";
     selectedAccountId = data.account.id;
     await loadAccounts();
@@ -508,7 +740,7 @@ async function autoDetectAccount(){
       btn.disabled = false;
     }, 1200);
   }catch(e){
-    msg.style.color = "var(--y)";
+    msg.style.color = "var(--apple-amber)";
     msg.textContent = "💡 " + e.message;
     btn.disabled = false;
   }
@@ -523,18 +755,18 @@ async function connectWithCredentials(){
   const btn = $("connectCredBtn");
 
   if(!login){
-    msg.style.color = "var(--r)";
+    msg.style.color = "var(--apple-red)";
     msg.textContent = "Please enter your MT5 Account / Login ID.";
     return;
   }
   if(!server){
-    msg.style.color = "var(--r)";
+    msg.style.color = "var(--apple-red)";
     msg.textContent = "Please enter your broker server (e.g. RoboForex-Pro).";
     return;
   }
 
   btn.disabled = true;
-  msg.style.color = "var(--a)";
+  msg.style.color = "var(--apple-blue)";
   msg.textContent = "Connecting to account #" + login + "...";
 
   try{
@@ -544,7 +776,7 @@ async function connectWithCredentials(){
       body:JSON.stringify({ login, server, password, name })
     });
     latestCreatedToken = data.trackerToken;
-    msg.style.color = "var(--g)";
+    msg.style.color = "var(--apple-green)";
     msg.textContent = "✅ " + data.message;
     selectedAccountId = data.account.id;
     await loadAccounts();
@@ -553,7 +785,7 @@ async function connectWithCredentials(){
       btn.disabled = false;
     }, 1000);
   }catch(e){
-    msg.style.color = "var(--r)";
+    msg.style.color = "var(--apple-red)";
     msg.textContent = "❌ " + e.message;
     btn.disabled = false;
   }
@@ -574,7 +806,6 @@ function copyRegenToken(btn){
 function openSetupModal(){
   const curr = accounts.find(a => a.id === selectedAccountId);
   if(!curr) return;
-  latestCreatedName = curr.name;
   $("setupAccName").textContent = curr.name;
   $("setupAccBroker").textContent = (curr.server || curr.broker || "Waiting for MT5 sync");
   $("setupAccLogin").textContent = curr.mt5_login || "Waiting for MT5 sync";
@@ -589,7 +820,7 @@ function closeSetupModal(){
 
 async function regenerateSelectedAccountToken(){
   if(!selectedAccountId) return;
-  if(!confirm("Are you sure? Any existing MT5 EA running with the old token will stop until updated with the new one.")) return;
+  if(!confirm("Are you sure? Any existing MT5 connection running with the old token will stop until updated.")) return;
   try{
     const data = await api("/api/accounts/" + selectedAccountId + "/regenerate-token", {
       method:"POST", headers:authHeaders()
@@ -641,7 +872,7 @@ function render({account,snapshot,trades}){
   const today=trades.filter(t=>t.close_time && new Date(t.close_time).toDateString()===now.toDateString());
   const pnlToday=today.reduce((sum,t)=>sum+net(t),0);
   $("todayPnl").textContent=money(pnlToday);
-  $("todayPnl").className="value "+(pnlToday>=0?"green":"red");
+  $("todayPnl").className="metric-value " + (pnlToday>=0 ? "val-green" : "val-red");
 
   const wins=trades.filter(t=>net(t)>0);
   const losses=trades.filter(t=>net(t)<0);
@@ -650,35 +881,34 @@ function render({account,snapshot,trades}){
   $("winRate").textContent=(trades.length?wins.length/trades.length*100:0).toFixed(1)+"%";
   $("profitFactor").textContent=gl? (gp/gl).toFixed(2) : (gp>0?"∞":"0.00");
   $("tradeCount").textContent=trades.length;
-  $("chartTradesCount").textContent = trades.length + " trades";
+  $("chartTradesCount").textContent = trades.length + " closed deals";
 
   const isSynced = Boolean(s.updated_at);
-  $("accountInfo").innerHTML=
-    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-       <b style="font-size:15px">${escapeHtml(account.name)}</b>
-       <span class="pill ${isSynced ? 'synced' : 'pending'}">${isSynced ? '● Live' : '○ Pending'}</span>
-     </div>
-     Broker / Server: ${escapeHtml(account.server || account.broker || "Waiting for MT5 sync")}<br>
-     MT5 login: ${account.mt5_login || "Waiting for MT5 sync"}<br>
-     Currency: ${escapeHtml(account.currency || "USD")}<br>
-     Last sync: ${s.updated_at ? new Date(s.updated_at).toLocaleString() : "Never"}`;
+  $("accCardTitle").textContent = account.name;
+  $("accStatusBadge").className = "account-badge " + (isSynced ? "badge-live" : "badge-pending");
+  $("accStatusBadge").textContent = isSynced ? "● Live Sync" : "○ Pending";
 
-  $("updated").textContent=s.updated_at ? "Updated " + new Date(s.updated_at).toLocaleString() : "Not synced yet";
+  $("cardBroker").textContent = account.broker || "Waiting for MT5";
+  $("cardServer").textContent = account.server || account.broker || "Auto-detected";
+  $("cardLogin").textContent = account.mt5_login ? "#" + account.mt5_login : "—";
+  $("cardCurrency").textContent = account.currency || "USD";
+  $("cardSync").textContent = s.updated_at ? new Date(s.updated_at).toLocaleTimeString() : "Never";
+  $("updatedTimestamp").textContent = s.updated_at ? "Updated " + new Date(s.updated_at).toLocaleString() : "Waiting for MT5 sync...";
 
   $("tbody").innerHTML=trades.map(t=>`
     <tr>
-      <td>${t.ticket}</td>
-      <td>${t.close_time?new Date(t.close_time).toLocaleString():"-"}</td>
-      <td><b>${escapeHtml(t.symbol)}</b></td>
-      <td class="${t.side==="BUY"?"green":"red"}" style="font-weight:700">${t.side}</td>
+      <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace">${t.ticket}</td>
+      <td style="color:var(--text-muted)">${t.close_time?new Date(t.close_time).toLocaleDateString() + ' ' + new Date(t.close_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):"-"}</td>
+      <td><b style="color:#fff">${escapeHtml(t.symbol)}</b></td>
+      <td><span class="side-pill ${t.side==="BUY"?"side-buy":"side-sell"}">${t.side}</span></td>
       <td>${Number(t.volume||0).toFixed(2)}</td>
       <td>${Number(t.entry_price||0).toFixed(2)}</td>
       <td>${Number(t.exit_price||0).toFixed(2)}</td>
-      <td>${Number(t.sl||0).toFixed(2)}</td>
-      <td>${Number(t.tp||0).toFixed(2)}</td>
+      <td style="color:var(--text-muted)">${Number(t.sl||0).toFixed(2)}</td>
+      <td style="color:var(--text-muted)">${Number(t.tp||0).toFixed(2)}</td>
       <td>${Number(t.rr||0).toFixed(2)}R</td>
-      <td class="${net(t)>=0?"green":"red"}" style="font-weight:700">${money(net(t))}</td>
-      <td><span class="muted">${escapeHtml(t.close_reason||"")}</span></td>
+      <td class="${net(t)>=0?"val-green":"val-red"}" style="font-weight:700">${money(net(t))}</td>
+      <td style="color:var(--text-muted);font-size:11px">${escapeHtml(t.close_reason||"")}</td>
     </tr>`).join("");
 
   renderChart(trades);
@@ -688,7 +918,7 @@ function renderEmpty(){
   $("balance").textContent="$0.00";
   $("equity").textContent="$0.00";
   $("todayPnl").textContent="$0.00";
-  $("winRate").textContent="0%";
+  $("winRate").textContent="0.0%";
   $("profitFactor").textContent="0.00";
   $("tradeCount").textContent="0";
   $("chartTradesCount").textContent = "";
@@ -703,12 +933,62 @@ function renderChart(trades){
   const arr=[...trades].filter(t=>t.close_time).sort((a,b)=>new Date(a.close_time)-new Date(b.close_time));
   let cum=0;
   const labels=[],values=[];
-  arr.forEach(t=>{cum+=net(t);labels.push(new Date(t.close_time).toLocaleDateString());values.push(cum)});
+  arr.forEach(t=>{cum+=net(t);labels.push(new Date(t.close_time).toLocaleDateString([],{month:'short',day:'numeric'}));values.push(cum)});
   if(chart) chart.destroy();
-  chart=new Chart($("equityChart"),{
+
+  const ctx = $("equityChart").getContext("2d");
+  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  gradient.addColorStop(0, "rgba(10, 132, 255, 0.28)");
+  gradient.addColorStop(1, "rgba(10, 132, 255, 0.0)");
+
+  chart=new Chart(ctx,{
     type:"line",
-    data:{labels,datasets:[{data:values,borderColor:"#38bdf8",backgroundColor:"rgba(56,189,248,0.08)",fill:true,borderWidth:2,tension:.25,pointRadius:trades.length > 50 ? 0 : 2}]},
-    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#8d9ab0",maxTicksLimit:8},grid:{color:"rgba(255,255,255,.04)"}},y:{ticks:{color:"#8d9ab0"},grid:{color:"rgba(255,255,255,.04)"}}}}
+    data:{
+      labels,
+      datasets:[{
+        data:values,
+        borderColor:"#0a84ff",
+        borderWidth:2.5,
+        backgroundColor:gradient,
+        fill:true,
+        tension:0.35,
+        pointRadius:trades.length > 50 ? 0 : 2,
+        pointHoverRadius:5,
+        pointBackgroundColor:"#0a84ff",
+        pointBorderColor:"#ffffff",
+        pointBorderWidth:1.5
+      }]
+    },
+    options:{
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:"rgba(20, 24, 36, 0.9)",
+          titleColor:"rgba(235, 235, 245, 0.6)",
+          bodyColor:"#ffffff",
+          borderColor:"rgba(255, 255, 255, 0.12)",
+          borderWidth:1,
+          padding:10,
+          cornerRadius:10,
+          displayColors:false,
+          callbacks:{
+            label: function(context){ return "Net Profit: " + money(context.parsed.y); }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:"rgba(235, 235, 245, 0.4)",font:{size:11},maxTicksLimit:8},
+          grid:{color:"rgba(255,255,255,0.03)"}
+        },
+        y:{
+          ticks:{color:"rgba(235, 235, 245, 0.4)",font:{size:11},callback: v => "$" + v},
+          grid:{color:"rgba(255,255,255,0.03)"}
+        }
+      }
+    }
   });
 }
 
