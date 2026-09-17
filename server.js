@@ -11,14 +11,20 @@ const path = require("path");
 const fs = require("fs");
 const app = express();
 
-if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
-  console.error("Missing DATABASE_URL or JWT_SECRET in .env");
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
+process.env.JWT_SECRET = JWT_SECRET;
+
+if (!process.env.DATABASE_URL) {
+  console.error("\n❌ ERROR: Missing DATABASE_URL environment variable.");
+  console.error("👉 Please add DATABASE_URL in your cloud dashboard (Render -> Environment tab).\n");
   process.exit(1);
 }
 
+const isLocalDb = process.env.DATABASE_URL.includes("localhost") || process.env.DATABASE_URL.includes("127.0.0.1");
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+  ssl: isLocalDb ? false : { rejectUnauthorized: false }
 });
 
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
