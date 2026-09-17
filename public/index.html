@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>MT5 Cloud Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,16 +14,16 @@
 <style>
 :root{
   --bg:#030508;
-  --panel:rgba(18, 22, 34, 0.65);
+  --panel:rgba(18, 22, 34, 0.72);
   --panel-solid:#0d111b;
-  --panel-hover:rgba(26, 32, 48, 0.75);
+  --panel-hover:rgba(26, 32, 48, 0.85);
   --input-bg:rgba(255, 255, 255, 0.05);
-  --input-border:rgba(255, 255, 255, 0.09);
+  --input-border:rgba(255, 255, 255, 0.1);
   --border:rgba(255, 255, 255, 0.08);
   --border-focus:#0a84ff;
   --text:#ffffff;
-  --text-muted:rgba(235, 235, 245, 0.55);
-  --text-sub:rgba(235, 235, 245, 0.35);
+  --text-muted:rgba(235, 235, 245, 0.6);
+  --text-sub:rgba(235, 235, 245, 0.38);
   --apple-blue:#0a84ff;
   --apple-green:#30d158;
   --apple-red:#ff453a;
@@ -34,24 +37,26 @@
   --radius-sm:8px;
 }
 
-*{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Plus Jakarta Sans","SF Pro Display","SF Pro Text",sans-serif;font-feature-settings:"tnum";min-height:100vh}
-
-/* Ambient glow background */
-body::before{
-  content:"";position:fixed;top:-15vw;left:15vw;width:70vw;height:45vw;
-  background:radial-gradient(circle,rgba(10,132,255,0.07) 0%,rgba(48,209,88,0.03) 40%,transparent 70%);
-  pointer-events:none;z-index:0;
+/* Lock viewport width to 100% so phone never scrolls horizontally */
+html,body{
+  margin:0;padding:0;width:100%;max-width:100vw;overflow-x:hidden!important;
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Plus Jakarta Sans","SF Pro Display","SF Pro Text",sans-serif;
+  font-feature-settings:"tnum";min-height:100vh;
+  -webkit-text-size-adjust:100%;
 }
-body::after{
-  content:"";position:fixed;bottom:-20vw;right:-10vw;width:60vw;height:50vw;
-  background:radial-gradient(circle,rgba(191,90,242,0.04) 0%,transparent 70%);
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+/* Subtle Apple background lighting */
+body::before{
+  content:"";position:fixed;top:-10vw;left:10vw;width:80vw;height:45vw;
+  background:radial-gradient(circle,rgba(10,132,255,0.08) 0%,rgba(48,209,88,0.03) 40%,transparent 70%);
   pointer-events:none;z-index:0;
 }
 
 .wrap{
-  position:relative;z-index:1;width:min(1420px,94%);margin:auto;
-  padding:max(16px,env(safe-area-inset-top)) 0 max(40px,env(safe-area-inset-bottom));
+  position:relative;z-index:1;width:100%;max-width:1360px;margin:auto;
+  padding:max(12px,env(safe-area-inset-top)) clamp(12px,3vw,24px) max(36px,env(safe-area-inset-bottom));
 }
 
 /* Apple Liquid Glass Panels */
@@ -62,74 +67,78 @@ body::after{
   border:1px solid var(--border);
   box-shadow:var(--shadow-sm),var(--glass-highlight);
   border-radius:var(--radius-xl);
-  padding:20px;
-  transition:border-color 0.2s ease,box-shadow 0.2s ease;
+  padding:clamp(14px,2.5vw,20px);
+  width:100%;max-width:100%;
 }
 
 /* Header & Nav */
 .header{
-  display:flex;justify-content:space-between;align-items:center;
-  gap:16px;margin-bottom:20px;flex-wrap:wrap;
+  display:flex;flex-direction:column;gap:12px;margin-bottom:16px;
 }
-.brand{display:flex;align-items:center;gap:12px}
+.header-top{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.brand{display:flex;align-items:center;gap:10px}
 .brand-logo{
-  width:38px;height:38px;border-radius:11px;
+  width:36px;height:36px;border-radius:10px;
   background:linear-gradient(135deg,#0a84ff 0%,#0055d4 100%);
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;box-shadow:0 4px 14px rgba(10,132,255,0.4);
+  font-size:17px;box-shadow:0 4px 12px rgba(10,132,255,0.35);flex-shrink:0;
 }
-.brand-title{font-size:18px;font-weight:700;letter-spacing:-0.4px;margin:0}
-.brand-status{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:2px}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(--apple-green);box-shadow:0 0 8px var(--apple-green)}
+.brand-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;margin:0}
+.brand-status{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:1px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--apple-green);box-shadow:0 0 8px var(--apple-green);flex-shrink:0}
 
-/* Nav Controls */
-.nav-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.header-actions{
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+}
+
+.account-selector-row{
+  display:flex;align-items:center;gap:8px;width:100%;
+}
 .account-pill-group{
   display:flex;align-items:center;background:var(--input-bg);
   border:1px solid var(--input-border);border-radius:var(--radius-md);
-  padding:3px;gap:4px;
+  padding:3px 4px;width:100%;gap:4px;
 }
 select.account-select{
-  background:transparent;border:none;color:#fff;
-  padding:6px 10px;font-size:13px;font-weight:600;outline:none;
-  cursor:pointer;max-width:260px;text-overflow:ellipsis;
-  font-family:inherit;
+  flex:1;min-width:0;background:transparent;border:none;color:#fff;
+  padding:7px 8px;font-size:13px;font-weight:600;outline:none;
+  cursor:pointer;font-family:inherit;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
 }
 select.account-select option{background:#0e1320;color:#fff}
 
 /* Apple Buttons */
 .btn{
   border:1px solid var(--border);background:var(--input-bg);color:var(--text);
-  padding:8px 14px;border-radius:var(--radius-md);font-size:12.5px;font-weight:600;
-  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  transition:all 0.18s cubic-bezier(0.16,1,0.3,1);font-family:inherit;outline:none;
-  user-select:none;-webkit-tap-highlight-color:transparent;
+  padding:8px 12px;border-radius:var(--radius-md);font-size:12.5px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  transition:all 0.15s cubic-bezier(0.16,1,0.3,1);font-family:inherit;outline:none;
+  user-select:none;-webkit-tap-highlight-color:transparent;min-height:38px;
 }
 .btn:hover{background:var(--panel-hover);border-color:rgba(255,255,255,0.16)}
-.btn:active{transform:scale(0.97)}
+.btn:active{transform:scale(0.96)}
 .btn-primary{
   background:linear-gradient(180deg,#0a84ff 0%,#0071e3 100%);
   border-color:rgba(255,255,255,0.2);color:#fff;
-  box-shadow:0 4px 14px rgba(10,132,255,0.35);
+  box-shadow:0 4px 12px rgba(10,132,255,0.3);
 }
 .btn-primary:hover{background:linear-gradient(180deg,#208eff 0%,#0a84ff 100%)}
 .btn-success{
   background:linear-gradient(180deg,#30d158 0%,#24a844 100%);
   border-color:rgba(255,255,255,0.2);color:#022409;font-weight:700;
-  box-shadow:0 4px 14px rgba(48,209,88,0.3);
+  box-shadow:0 4px 12px rgba(48,209,88,0.3);
 }
-.btn-success:hover{background:linear-gradient(180deg,#3fe067 0%,#30d158 100%)}
 .btn-danger{
   background:rgba(255,69,58,0.1);border-color:rgba(255,69,58,0.25);
   color:var(--apple-red);
 }
-.btn-danger:hover{background:rgba(255,69,58,0.2)}
-.btn-icon{padding:8px 10px;font-size:13px}
+.btn-icon{padding:8px 10px;min-width:38px}
 
 /* Metrics Grid (Apple Cards) */
 .metrics-grid{
   display:grid;grid-template-columns:repeat(6,1fr);
-  gap:12px;margin-bottom:16px;
+  gap:10px;margin-bottom:14px;
 }
 .metric-card{
   background:var(--panel);
@@ -138,79 +147,97 @@ select.account-select option{background:#0e1320;color:#fff}
   border:1px solid var(--border);
   box-shadow:var(--shadow-sm),var(--glass-highlight);
   border-radius:var(--radius-lg);
-  padding:16px 18px;
-  position:relative;overflow:hidden;
-  transition:transform 0.2s ease,border-color 0.2s ease;
+  padding:14px 16px;position:relative;overflow:hidden;
 }
-.metric-card:hover{border-color:rgba(255,255,255,0.15)}
 .metric-label{
   font-size:10.5px;font-weight:700;text-transform:uppercase;
-  letter-spacing:0.07em;color:var(--text-muted);margin-bottom:6px;
+  letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;
 }
 .metric-value{
-  font-size:24px;font-weight:800;letter-spacing:-0.6px;
+  font-size:22px;font-weight:800;letter-spacing:-0.5px;
   font-variant-numeric:tabular-nums;line-height:1.15;
 }
 .val-green{color:var(--apple-green)}
 .val-red{color:var(--apple-red)}
 .val-blue{color:var(--apple-blue)}
 
-/* Content Grid (Chart + Account Card) */
+/* Main Content Grid */
 .main-grid{
   display:grid;grid-template-columns:2.5fr 1fr;
-  gap:16px;margin-bottom:16px;
+  gap:14px;margin-bottom:14px;
 }
 .chart-header{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:12px;flex-wrap:wrap;gap:8px;
+  margin-bottom:10px;gap:8px;
 }
-.chart-title{font-size:15px;font-weight:700;letter-spacing:-0.2px}
-.chart-container{height:280px;position:relative}
+.chart-title{font-size:14px;font-weight:700;letter-spacing:-0.2px}
+.chart-container{height:260px;position:relative;width:100%}
 
-/* Account Info Card */
+/* Account Detail Box */
 .account-detail-box{
-  display:flex;flex-direction:column;gap:12px;height:100%;justify-content:space-between;
+  display:flex;flex-direction:column;gap:10px;justify-content:space-between;
 }
 .account-info-header{
-  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
 }
 .account-badge{
   display:inline-flex;align-items:center;gap:5px;
-  padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;
+  padding:3px 8px;border-radius:20px;font-size:10.5px;font-weight:700;
 }
 .badge-live{background:rgba(48,209,88,0.12);color:var(--apple-green);border:1px solid rgba(48,209,88,0.25)}
 .badge-pending{background:rgba(255,214,10,0.12);color:var(--apple-amber);border:1px solid rgba(255,214,10,0.25)}
-.detail-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12.5px}
+.detail-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px}
 .detail-item:last-child{border-bottom:none}
 .detail-k{color:var(--text-muted)}
 .detail-v{font-weight:600;color:#fff}
 
-/* Trades Table Glass */
+/* Table for Desktop & Tablet */
+.desktop-only{display:block}
+.mobile-deals-list{display:none;flex-direction:column;gap:8px}
+
 .table-header{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:14px;flex-wrap:wrap;gap:8px;
+  margin-bottom:12px;gap:8px;
 }
 .table-wrap{
   overflow-x:auto;border-radius:var(--radius-lg);
-  border:1px solid rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.05);max-width:100%;
 }
-table{width:100%;border-collapse:collapse;min-width:920px;font-size:12.5px}
+table{width:100%;border-collapse:collapse;min-width:880px;font-size:12px}
 th{
-  text-align:left;padding:11px 14px;color:var(--text-muted);
-  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+  text-align:left;padding:10px 12px;color:var(--text-muted);
+  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
   background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);
 }
 td{
-  padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);
+  padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);
   font-variant-numeric:tabular-nums;color:#fff;
 }
 tr:hover td{background:rgba(255,255,255,0.02)}
 .side-pill{
   display:inline-block;padding:2px 7px;border-radius:6px;
-  font-size:10.5px;font-weight:800;letter-spacing:0.04em;
+  font-size:10px;font-weight:800;letter-spacing:0.04em;
 }
 .side-buy{background:rgba(48,209,88,0.15);color:var(--apple-green)}
 .side-sell{background:rgba(255,69,58,0.15);color:var(--apple-red)}
+
+/* Mobile Deal Card (Robinhood / Apple Stocks style) */
+.mobile-deal-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:14px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.deal-row-top{
+  display:flex;justify-content:space-between;align-items:center;
+}
+.deal-symbol-grp{display:flex;align-items:center;gap:7px}
+.deal-symbol{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.2px}
+.deal-pnl{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.deal-row-bottom{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11.5px;color:var(--text-muted);
+}
 
 /* Apple Modal Windows */
 .modal-backdrop{
@@ -220,90 +247,96 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   display:flex;align-items:center;justify-content:center;
   z-index:9999;padding:16px;
-  animation:fadeIn 0.15s ease-out;
 }
 .modal-box{
-  background:rgba(22, 26, 38, 0.88);
+  background:rgba(22, 26, 38, 0.92);
   border:1px solid rgba(255,255,255,0.12);
-  border-radius:24px;width:min(520px,100%);max-height:90vh;overflow-y:auto;
+  border-radius:24px;width:min(500px,100%);max-height:88vh;overflow-y:auto;
   box-shadow:var(--shadow-lg),var(--glass-highlight);
-  padding:24px;animation:scaleIn 0.2s cubic-bezier(0.16,1,0.3,1);
+  padding:22px;
 }
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
-
 .modal-head{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;
+  margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:12px;
 }
-.modal-head h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.modal-head h3{margin:0;font-size:16px;font-weight:700}
 .close-btn{
-  width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);
-  border:none;color:var(--text-muted);font-size:18px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;transition:all 0.15s ease;
+  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);
+  border:none;color:var(--text-muted);font-size:16px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;
 }
-.close-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
 
-/* Input Fields (Apple Style) */
+/* Form Inputs */
 input[type="text"],input[type="number"],input[type="password"],input[type="email"],select.apple-input{
   width:100%;border:1px solid var(--input-border);background:var(--input-bg);
-  color:#fff;padding:11px 14px;border-radius:var(--radius-md);font-size:13.5px;
-  font-family:inherit;outline:none;transition:all 0.18s ease;
+  color:#fff;padding:10px 12px;border-radius:var(--radius-md);font-size:13.5px;
+  font-family:inherit;outline:none;transition:all 0.15s ease;
 }
 input:focus,select.apple-input:focus{
   border-color:var(--apple-blue);background:rgba(255,255,255,0.08);
   box-shadow:0 0 0 3px rgba(10,132,255,0.25);
 }
 
-/* Auth Card */
-.auth-box{max-width:380px;margin:12vh auto;padding:28px}
-.auth-box h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-0.5px}
-
-.stack{display:grid;gap:12px}
+.stack{display:grid;gap:10px}
 .hidden{display:none!important}
 .row{display:flex;gap:8px;align-items:center}
 .grow{flex:1}
 
-/* Mobile & Tablet Responsiveness */
-@media(max-width:1024px){
+/* Responsive Breakpoints (iPhone, Android, Tablet, Desktop) */
+@media (max-width:1024px){
   .metrics-grid{grid-template-columns:repeat(3,1fr)}
   .main-grid{grid-template-columns:1fr}
 }
-@media(max-width:640px){
-  .wrap{width:92%;padding-top:12px}
-  .header{flex-direction:column;align-items:stretch;gap:12px}
-  .nav-actions{justify-content:space-between}
-  .account-pill-group{width:100%;justify-content:space-between}
-  select.account-select{max-width:none;flex:1}
-  .metrics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .metric-card{padding:12px 14px}
-  .metric-value{font-size:20px}
-  .chart-container{height:230px}
-  .modal-box{padding:18px;border-radius:20px}
+
+@media (max-width:768px){
+  .desktop-only{display:none!important}
+  .mobile-deals-list{display:flex!important}
 }
-@media(max-width:380px){
-  .metrics-grid{grid-template-columns:1fr}
+
+@media (max-width:640px){
+  .wrap{padding-left:10px;padding-right:10px;padding-top:10px}
+  .glass{padding:14px;border-radius:18px}
+  .header-actions .btn{min-height:36px;padding:6px 10px}
+  .metrics-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .metric-card{padding:12px 14px;border-radius:14px}
+  .metric-value{font-size:18px}
+  .chart-container{height:210px}
+  
+  /* iOS Bottom Sheet style modal on mobile */
+  .modal-backdrop{
+    align-items:flex-end;padding:0;
+  }
+  .modal-box{
+    width:100%!important;max-width:100%!important;
+    border-radius:24px 24px 0 0!important;border-bottom:none!important;
+    max-height:86vh;padding:20px 18px max(24px,env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width:360px){
+  .brand-title{font-size:15px}
+  .metric-value{font-size:17px}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- Auth Screen (Apple Minimalist) -->
-  <div id="authView" class="auth-box glass">
+  <!-- Sign In Screen -->
+  <div id="authView" class="glass" style="max-width:380px;margin:12vh auto;padding:24px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
       <div class="brand-logo">📊</div>
       <div>
-        <h2>MT5 Tracker</h2>
-        <div class="muted" style="color:var(--text-muted);font-size:12px">Sign in to your trading dashboard</div>
+        <h2 style="margin:0;font-size:20px;font-weight:800;letter-spacing:-0.4px">MT5 Tracker</h2>
+        <div style="color:var(--text-muted);font-size:12px">Sign in to your trading dashboard</div>
       </div>
     </div>
     <div class="stack">
       <input id="email" type="email" placeholder="Email address">
       <input id="password" type="password" placeholder="Password (8+ chars)">
       <div class="row" style="margin-top:4px">
-        <button class="btn btn-primary grow" id="loginBtn" style="padding:11px">Sign In</button>
-        <button class="btn grow" id="registerBtn" style="padding:11px">Create Account</button>
+        <button class="btn btn-primary grow" id="loginBtn" style="padding:10px">Sign In</button>
+        <button class="btn grow" id="registerBtn" style="padding:10px">Create Account</button>
       </div>
       <div id="authMsg" style="font-size:12px;color:var(--apple-red);text-align:center"></div>
       <div style="margin-top:6px;text-align:center">
@@ -314,48 +347,51 @@ input:focus,select.apple-input:focus{
     </div>
   </div>
 
-  <!-- Main Dashboard App -->
+  <!-- Main App View -->
   <div id="appView" class="hidden">
-    <!-- Apple Glass Header -->
-    <header class="header glass" style="padding:14px 18px">
-      <div class="brand">
-        <div class="brand-logo">📊</div>
-        <div>
-          <h1 class="brand-title">Trade Tracker</h1>
-          <div class="brand-status">
-            <span class="status-dot"></span>
-            <span>Cloud Connected</span>
-            <span style="opacity:0.35">·</span>
-            <span id="topApiDisplay" style="color:var(--text-muted);font-size:11px"></span>
+    <!-- Header -->
+    <header class="header glass">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-logo">📊</div>
+          <div>
+            <h1 class="brand-title">Trade Tracker</h1>
+            <div class="brand-status">
+              <span class="status-dot"></span>
+              <span>Live Cloud Sync</span>
+            </div>
           </div>
         </div>
+        
+        <div class="header-actions">
+          <button class="btn btn-primary" id="newAccountBtn">+ Add</button>
+          <button class="btn btn-icon" id="refreshBtn" title="Refresh">🔄</button>
+          <button class="btn btn-icon" id="apiUrlBtn" title="API Settings">⚙️</button>
+          <button class="btn btn-danger btn-icon" id="logoutBtn" title="Logout">🚪</button>
+        </div>
       </div>
-      
-      <div class="nav-actions">
+
+      <div class="account-selector-row">
         <div class="account-pill-group">
           <select id="accountSelect" class="account-select"></select>
           <button class="btn btn-icon" id="setupAccountBtn" title="Account Credentials">🔑</button>
           <button class="btn btn-danger btn-icon" id="deleteAccountBtn" title="Delete Account">🗑️</button>
         </div>
-        <button class="btn btn-primary" id="newAccountBtn">+ Add Account</button>
-        <button class="btn" id="refreshBtn" title="Refresh">🔄</button>
-        <button class="btn" id="apiUrlBtn" title="API Settings">⚙️</button>
-        <button class="btn btn-danger" id="logoutBtn">Logout</button>
       </div>
     </header>
 
-    <!-- Metrics Grid -->
+    <!-- Metrics Cards -->
     <section class="metrics-grid">
       <div class="metric-card">
-        <div class="metric-label">Account Balance</div>
+        <div class="metric-label">Balance</div>
         <div class="metric-value" id="balance">$0.00</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Total Equity</div>
+        <div class="metric-label">Equity</div>
         <div class="metric-value" id="equity">$0.00</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Today's P&L</div>
+        <div class="metric-label">Today P&L</div>
         <div class="metric-value val-green" id="todayPnl">$0.00</div>
       </div>
       <div class="metric-card">
@@ -372,12 +408,12 @@ input:focus,select.apple-input:focus{
       </div>
     </section>
 
-    <!-- Main Grid: Chart + Account Card -->
+    <!-- Chart + Account Card -->
     <section class="main-grid">
       <div class="glass">
         <div class="chart-header">
           <div class="chart-title">Net Cumulative Performance</div>
-          <div style="font-size:12px;color:var(--text-muted)" id="chartTradesCount"></div>
+          <div style="font-size:11.5px;color:var(--text-muted)" id="chartTradesCount"></div>
         </div>
         <div class="chart-container">
           <canvas id="equityChart"></canvas>
@@ -387,10 +423,10 @@ input:focus,select.apple-input:focus{
       <div class="glass account-detail-box">
         <div>
           <div class="account-info-header">
-            <div style="font-size:15px;font-weight:700" id="accCardTitle">Account Info</div>
+            <div style="font-size:14px;font-weight:700" id="accCardTitle">Account Details</div>
             <span class="account-badge badge-live" id="accStatusBadge">● Live</span>
           </div>
-          <div style="margin-top:14px" id="accountDetailsList">
+          <div style="margin-top:10px" id="accountDetailsList">
             <div class="detail-item"><span class="detail-k">Broker</span><span class="detail-v" id="cardBroker">—</span></div>
             <div class="detail-item"><span class="detail-k">Server</span><span class="detail-v" id="cardServer">—</span></div>
             <div class="detail-item"><span class="detail-k">Login ID</span><span class="detail-v" id="cardLogin">—</span></div>
@@ -398,19 +434,21 @@ input:focus,select.apple-input:focus{
             <div class="detail-item"><span class="detail-k">Last Sync</span><span class="detail-v" id="cardSync">—</span></div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--text-sub);text-align:right" id="updatedTimestamp">
+        <div style="font-size:11px;color:var(--text-sub);text-align:right;margin-top:6px" id="updatedTimestamp">
           Waiting for MT5 sync...
         </div>
       </div>
     </section>
 
-    <!-- Trade History Table -->
+    <!-- Trade History: Desktop Table & Mobile Deals Feed -->
     <section class="glass">
       <div class="table-header">
-        <div style="font-size:15px;font-weight:700">Recent Deals History</div>
-        <div style="font-size:11.5px;color:var(--text-muted)">Real-time synced from MetaTrader 5</div>
+        <div style="font-size:14px;font-weight:700">Recent Deals</div>
+        <div style="font-size:11px;color:var(--text-muted)">Synced from MT5</div>
       </div>
-      <div class="table-wrap">
+
+      <!-- Desktop Table (>= 768px) -->
+      <div class="table-wrap desktop-only">
         <table>
           <thead>
             <tr>
@@ -422,11 +460,14 @@ input:focus,select.apple-input:focus{
           <tbody id="tbody"></tbody>
         </table>
       </div>
+
+      <!-- Mobile Deals Feed (< 768px) -->
+      <div class="mobile-deals-list" id="mobileDealsList"></div>
     </section>
   </div>
 </div>
 
-<!-- Apple Modal: Connect MT5 Account -->
+<!-- Modal: Connect MT5 Account -->
 <div id="connectModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="modal-head">
@@ -435,22 +476,22 @@ input:focus,select.apple-input:focus{
     </div>
 
     <!-- 1-Click Auto-Detect Card -->
-    <div style="background:rgba(48,209,88,0.08);border:1px solid rgba(48,209,88,0.22);padding:16px;border-radius:var(--radius-lg);margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <div style="background:rgba(48,209,88,0.08);border:1px solid rgba(48,209,88,0.22);padding:14px;border-radius:var(--radius-lg);margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-weight:700;color:var(--apple-green);font-size:13.5px">⚡ 1-Click Auto-Detect from MT5</div>
-          <div style="color:var(--text-muted);font-size:11.5px;margin-top:2px">
-            If MT5 is running on your PC, click to link your account instantly!
+          <div style="font-weight:700;color:var(--apple-green);font-size:13px">⚡ 1-Click Auto-Detect from MT5</div>
+          <div style="color:var(--text-muted);font-size:11px;margin-top:2px">
+            If MT5 is open on your PC, click to link instantly!
           </div>
         </div>
         <button class="btn btn-success" id="autoDetectBtn" onclick="autoDetectAccount()">
           ⚡ Auto-Detect
         </button>
       </div>
-      <div id="autoDetectMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
+      <div id="autoDetectMsg" style="margin-top:6px;font-size:12px;font-weight:600"></div>
     </div>
 
-    <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+    <div style="display:flex;align-items:center;gap:10px;margin:12px 0">
       <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
       <span style="font-size:10px;letter-spacing:1px;font-weight:700;color:var(--text-sub)">OR LOGIN LIKE IN MT5</span>
       <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
@@ -459,18 +500,18 @@ input:focus,select.apple-input:focus{
     <!-- MT5 Credentials Form -->
     <div class="stack" id="credForm">
       <div>
-        <div class="metric-label" style="margin-bottom:4px">Account Label (Optional)</div>
+        <div class="metric-label" style="margin-bottom:3px">Account Label (Optional)</div>
         <input id="credName" type="text" placeholder="e.g. RoboForex Real, FTMO Challenge">
       </div>
 
       <div>
-        <div class="metric-label" style="margin-bottom:4px">MT5 Login / Account Number <span style="color:var(--apple-red)">*</span></div>
+        <div class="metric-label" style="margin-bottom:3px">MT5 Login / Account Number <span style="color:var(--apple-red)">*</span></div>
         <input id="credLogin" type="number" placeholder="e.g. 37399837" autofocus>
       </div>
 
       <div>
-        <div class="metric-label" style="margin-bottom:4px">Broker Server <span style="color:var(--apple-red)">*</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:8px">
+        <div class="metric-label" style="margin-bottom:3px">Broker Server <span style="color:var(--apple-red)">*</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:6px">
           <select id="credServerSelect" class="apple-input" onchange="handleServerSelectChange(this)">
             <option value="RoboForex-Pro">RoboForex-Pro</option>
             <option value="RoboForex-ECN">RoboForex-ECN</option>
@@ -487,17 +528,17 @@ input:focus,select.apple-input:focus{
       </div>
 
       <div>
-        <div class="metric-label" style="margin-bottom:4px">Investor Password (Read-Only)</div>
+        <div class="metric-label" style="margin-bottom:3px">Investor Password (Read-Only)</div>
         <input id="credPassword" type="password" placeholder="••••••••••••">
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
           🔒 <b>100% Safe:</b> Use your broker's read-only investor password. It cannot execute trades.
         </div>
       </div>
 
       <div id="credMsg" style="font-size:12px"></div>
 
-      <div class="row" style="margin-top:8px">
-        <button class="btn btn-primary grow" id="connectCredBtn" style="padding:11px 16px" onclick="connectWithCredentials()">
+      <div class="row" style="margin-top:6px">
+        <button class="btn btn-primary grow" id="connectCredBtn" style="padding:10px 14px" onclick="connectWithCredentials()">
           🚀 Connect Account
         </button>
         <button class="btn" onclick="closeConnectModal()">Cancel</button>
@@ -506,7 +547,7 @@ input:focus,select.apple-input:focus{
   </div>
 </div>
 
-<!-- Apple Modal: Setup & Account Credentials -->
+<!-- Modal: Setup & Account Credentials -->
 <div id="setupModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="modal-head">
@@ -515,14 +556,14 @@ input:focus,select.apple-input:focus{
     </div>
     
     <div class="stack">
-      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;font-size:13px;line-height:1.7">
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;font-size:12.5px;line-height:1.7">
         <b id="setupAccName"></b><br>
         <span style="color:var(--text-muted)">Broker / Server:</span> <span id="setupAccBroker"></span><br>
         <span style="color:var(--text-muted)">MT5 Login:</span> <span id="setupAccLogin"></span><br>
         <span style="color:var(--text-muted)">Last Synced:</span> <span id="setupAccSync"></span>
       </div>
 
-      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;margin-top:4px">
         <div style="font-weight:700;font-size:13px;color:var(--apple-amber);margin-bottom:4px">Reset Connection Key</div>
         <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:8px">
           If you need a new secure token for this account:
@@ -531,9 +572,9 @@ input:focus,select.apple-input:focus{
           🔄 Generate New Token
         </button>
         <div id="regenTokenResult" class="stack hidden" style="margin-top:10px">
-          <div class="code-box">
-            <span id="regenTokenText" style="font-size:11px"></span>
-            <button class="copy-pill" onclick="copyRegenToken(this)">📋 Copy</button>
+          <div style="background:#080d16;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:monospace;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:6px">
+            <span id="regenTokenText" style="word-break:break-all"></span>
+            <button class="btn btn-icon" onclick="copyRegenToken(this)">📋 Copy</button>
           </div>
         </div>
       </div>
@@ -545,21 +586,21 @@ input:focus,select.apple-input:focus{
   </div>
 </div>
 
-<!-- Apple Modal: Delete Account Confirmation -->
+<!-- Modal: Delete Account Confirmation -->
 <div id="deleteModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:420px">
+  <div class="modal-box" style="max-width:400px">
     <div class="modal-head">
       <h3 style="color:var(--apple-red)">Delete Account</h3>
       <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
     </div>
     <div class="stack">
-      <p style="font-size:13.5px;line-height:1.5;margin:0">
+      <p style="font-size:13px;line-height:1.5;margin:0">
         Are you sure you want to delete <b id="deleteAccName"></b>?
       </p>
-      <div style="background:rgba(255,69,58,0.08);border:1px solid rgba(255,69,58,0.2);color:var(--apple-red);padding:12px;border-radius:var(--radius-md);font-size:12px">
+      <div style="background:rgba(255,69,58,0.08);border:1px solid rgba(255,69,58,0.2);color:var(--apple-red);padding:10px 12px;border-radius:var(--radius-md);font-size:11.5px">
         ⚠️ This will permanently remove this account and all its recorded trade snapshots.
       </div>
-      <div class="row" style="margin-top:14px;justify-content:flex-end">
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
         <button class="btn" onclick="closeDeleteModal()">Cancel</button>
         <button class="btn btn-danger" id="confirmDeleteBtn" onclick="executeDeleteAccount()">Delete Permanently</button>
       </div>
@@ -585,8 +626,6 @@ let API_BASE = getApiBase();
 function updateApiDisplay() {
   const disp = $("currentApiDisplay");
   if (disp) disp.textContent = API_BASE || "Not configured";
-  const topDisp = $("topApiDisplay");
-  if (topDisp) topDisp.textContent = API_BASE ? API_BASE.replace(/^https?:\/\//, "") : "Not configured";
 }
 
 function promptApiUrl() {
@@ -791,16 +830,12 @@ async function connectWithCredentials(){
   }
 }
 
-function copyText(text, btnElement){
-  navigator.clipboard.writeText(text).then(()=>{
-    const old = btnElement.textContent;
-    btnElement.textContent = "Copied!";
-    setTimeout(()=> btnElement.textContent = old, 1500);
-  });
-}
-
 function copyRegenToken(btn){
-  copyText(latestCreatedToken, btn);
+  navigator.clipboard.writeText(latestCreatedToken).then(()=>{
+    const old = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(()=> btn.textContent = old, 1500);
+  });
 }
 
 function openSetupModal(){
@@ -892,13 +927,14 @@ function render({account,snapshot,trades}){
   $("cardServer").textContent = account.server || account.broker || "Auto-detected";
   $("cardLogin").textContent = account.mt5_login ? "#" + account.mt5_login : "—";
   $("cardCurrency").textContent = account.currency || "USD";
-  $("cardSync").textContent = s.updated_at ? new Date(s.updated_at).toLocaleTimeString() : "Never";
+  $("cardSync").textContent = s.updated_at ? new Date(s.updated_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "Never";
   $("updatedTimestamp").textContent = s.updated_at ? "Updated " + new Date(s.updated_at).toLocaleString() : "Waiting for MT5 sync...";
 
+  // Render Desktop Table
   $("tbody").innerHTML=trades.map(t=>`
     <tr>
       <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace">${t.ticket}</td>
-      <td style="color:var(--text-muted)">${t.close_time?new Date(t.close_time).toLocaleDateString() + ' ' + new Date(t.close_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):"-"}</td>
+      <td style="color:var(--text-muted)">${t.close_time?new Date(t.close_time).toLocaleDateString([],{month:'short',day:'numeric'}) + ' ' + new Date(t.close_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):"-"}</td>
       <td><b style="color:#fff">${escapeHtml(t.symbol)}</b></td>
       <td><span class="side-pill ${t.side==="BUY"?"side-buy":"side-sell"}">${t.side}</span></td>
       <td>${Number(t.volume||0).toFixed(2)}</td>
@@ -910,6 +946,23 @@ function render({account,snapshot,trades}){
       <td class="${net(t)>=0?"val-green":"val-red"}" style="font-weight:700">${money(net(t))}</td>
       <td style="color:var(--text-muted);font-size:11px">${escapeHtml(t.close_reason||"")}</td>
     </tr>`).join("");
+
+  // Render Mobile Deals Cards
+  $("mobileDealsList").innerHTML=trades.slice(0,50).map(t=>`
+    <div class="mobile-deal-card">
+      <div class="deal-row-top">
+        <div class="deal-symbol-grp">
+          <span class="deal-symbol">${escapeHtml(t.symbol)}</span>
+          <span class="side-pill ${t.side==="BUY"?"side-buy":"side-sell"}">${t.side} ${Number(t.volume||0).toFixed(2)}</span>
+        </div>
+        <span class="deal-pnl ${net(t)>=0?"val-green":"val-red"}">${net(t)>=0?"+":""}${money(net(t))}</span>
+      </div>
+      <div class="deal-row-bottom">
+        <span>${t.close_time?new Date(t.close_time).toLocaleDateString([],{month:'short',day:'numeric'}) + ' ' + new Date(t.close_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):"-"}</span>
+        <span>${Number(t.entry_price||0).toFixed(2)} → ${Number(t.exit_price||0).toFixed(2)} ${Number(t.rr||0)>0?'('+Number(t.rr).toFixed(1)+'R)':''}</span>
+      </div>
+    </div>
+  `).join("") || '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">No closed trades yet</div>';
 
   renderChart(trades);
 }
@@ -923,6 +976,7 @@ function renderEmpty(){
   $("tradeCount").textContent="0";
   $("chartTradesCount").textContent = "";
   $("tbody").innerHTML="";
+  $("mobileDealsList").innerHTML='<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">No accounts or trades connected</div>';
   renderChart([]);
 }
 
@@ -937,7 +991,7 @@ function renderChart(trades){
   if(chart) chart.destroy();
 
   const ctx = $("equityChart").getContext("2d");
-  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  const gradient = ctx.createLinearGradient(0, 0, 0, 240);
   gradient.addColorStop(0, "rgba(10, 132, 255, 0.28)");
   gradient.addColorStop(1, "rgba(10, 132, 255, 0.0)");
 
@@ -961,16 +1015,17 @@ function renderChart(trades){
     },
     options:{
       maintainAspectRatio:false,
+      responsive:true,
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:false},
         tooltip:{
-          backgroundColor:"rgba(20, 24, 36, 0.9)",
+          backgroundColor:"rgba(20, 24, 36, 0.92)",
           titleColor:"rgba(235, 235, 245, 0.6)",
           bodyColor:"#ffffff",
           borderColor:"rgba(255, 255, 255, 0.12)",
           borderWidth:1,
-          padding:10,
+          padding:9,
           cornerRadius:10,
           displayColors:false,
           callbacks:{
@@ -980,11 +1035,11 @@ function renderChart(trades){
       },
       scales:{
         x:{
-          ticks:{color:"rgba(235, 235, 245, 0.4)",font:{size:11},maxTicksLimit:8},
+          ticks:{color:"rgba(235, 235, 245, 0.4)",font:{size:10.5},maxTicksLimit:6},
           grid:{color:"rgba(255,255,255,0.03)"}
         },
         y:{
-          ticks:{color:"rgba(235, 235, 245, 0.4)",font:{size:11},callback: v => "$" + v},
+          ticks:{color:"rgba(235, 235, 245, 0.4)",font:{size:10.5},callback: v => "$" + v},
           grid:{color:"rgba(255,255,255,0.03)"}
         }
       }
