@@ -294,58 +294,72 @@ app.post("/api/mt5/ingest", async (req, res) => {
       ]
     );
 
-    for (const t of trades) {
-      await client.query(
-        `INSERT INTO trades(
-          account_id,ticket,position_id,open_time,close_time,symbol,side,volume,
-          entry_price,exit_price,sl,tp,rr,profit,commission,swap,
-          source,strategy,magic,close_reason
-        )
-        VALUES(
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20
-        )
-        ON CONFLICT(account_id,ticket) DO UPDATE SET
-          position_id=EXCLUDED.position_id,
-          open_time=EXCLUDED.open_time,
-          close_time=EXCLUDED.close_time,
-          symbol=EXCLUDED.symbol,
-          side=EXCLUDED.side,
-          volume=EXCLUDED.volume,
-          entry_price=EXCLUDED.entry_price,
-          exit_price=EXCLUDED.exit_price,
-          sl=EXCLUDED.sl,
-          tp=EXCLUDED.tp,
-          rr=EXCLUDED.rr,
-          profit=EXCLUDED.profit,
-          commission=EXCLUDED.commission,
-          swap=EXCLUDED.swap,
-          source=EXCLUDED.source,
-          strategy=EXCLUDED.strategy,
-          magic=EXCLUDED.magic,
-          close_reason=EXCLUDED.close_reason`,
-        [
-          accountId,
-          Number(t.ticket || 0),
-          t.position_id ? Number(t.position_id) : null,
-          t.open_time || null,
-          t.close_time || null,
-          String(t.symbol || ""),
-          String(t.side || "").toUpperCase() === "SELL" ? "SELL" : "BUY",
-          Number(t.volume || 0),
-          Number(t.entry_price || 0),
-          Number(t.exit_price || 0),
-          Number(t.sl || 0),
-          Number(t.tp || 0),
-          Number(t.rr || 0),
-          Number(t.profit || 0),
-          Number(t.commission || 0),
-          Number(t.swap || 0),
-          String(t.source || "MANUAL"),
-          String(t.strategy || ""),
-          Number(t.magic || 0),
-          String(t.close_reason || "")
-        ]
-      );
+    if (trades.length > 0) {
+      const batchSize = 100;
+      for (let i = 0; i < trades.length; i += batchSize) {
+        const chunk = trades.slice(i, i + batchSize);
+        const valuePlaceholders = [];
+        const values = [];
+        let p = 1;
+
+        for (const t of chunk) {
+          valuePlaceholders.push(
+            `($${p},$${p+1},$${p+2},$${p+3},$${p+4},$${p+5},$${p+6},$${p+7},$${p+8},$${p+9},$${p+10},$${p+11},$${p+12},$${p+13},$${p+14},$${p+15},$${p+16},$${p+17},$${p+18},$${p+19})`
+          );
+          values.push(
+            accountId,
+            Number(t.ticket || 0),
+            t.position_id ? Number(t.position_id) : null,
+            t.open_time || null,
+            t.close_time || null,
+            String(t.symbol || ""),
+            String(t.side || "").toUpperCase() === "SELL" ? "SELL" : "BUY",
+            Number(t.volume || 0),
+            Number(t.entry_price || 0),
+            Number(t.exit_price || 0),
+            Number(t.sl || 0),
+            Number(t.tp || 0),
+            Number(t.rr || 0),
+            Number(t.profit || 0),
+            Number(t.commission || 0),
+            Number(t.swap || 0),
+            String(t.source || "MANUAL"),
+            String(t.strategy || ""),
+            Number(t.magic || 0),
+            String(t.close_reason || "")
+          );
+          p += 20;
+        }
+
+        const query = `
+          INSERT INTO trades(
+            account_id,ticket,position_id,open_time,close_time,symbol,side,volume,
+            entry_price,exit_price,sl,tp,rr,profit,commission,swap,
+            source,strategy,magic,close_reason
+          )
+          VALUES ${valuePlaceholders.join(",")}
+          ON CONFLICT(account_id,ticket) DO UPDATE SET
+            position_id=EXCLUDED.position_id,
+            open_time=EXCLUDED.open_time,
+            close_time=EXCLUDED.close_time,
+            symbol=EXCLUDED.symbol,
+            side=EXCLUDED.side,
+            volume=EXCLUDED.volume,
+            entry_price=EXCLUDED.entry_price,
+            exit_price=EXCLUDED.exit_price,
+            sl=EXCLUDED.sl,
+            tp=EXCLUDED.tp,
+            rr=EXCLUDED.rr,
+            profit=EXCLUDED.profit,
+            commission=EXCLUDED.commission,
+            swap=EXCLUDED.swap,
+            source=EXCLUDED.source,
+            strategy=EXCLUDED.strategy,
+            magic=EXCLUDED.magic,
+            close_reason=EXCLUDED.close_reason`;
+
+        await client.query(query, values);
+      }
     }
 
     await client.query("COMMIT");
