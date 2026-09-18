@@ -65,3 +65,26 @@ CREATE TABLE IF NOT EXISTS trades (
 
 CREATE INDEX IF NOT EXISTS idx_trades_account_close
 ON trades(account_id, close_time DESC);
+
+CREATE TABLE IF NOT EXISTS open_positions (
+    id BIGSERIAL PRIMARY KEY,
+    account_id BIGINT NOT NULL REFERENCES trading_accounts(id) ON DELETE CASCADE,
+    ticket BIGINT NOT NULL,
+    symbol TEXT NOT NULL,
+    side TEXT NOT NULL CHECK (side IN ('BUY','SELL')),
+    volume NUMERIC(12,4) NOT NULL DEFAULT 0,
+    open_price NUMERIC(20,8) NOT NULL DEFAULT 0,
+    current_price NUMERIC(20,8) NOT NULL DEFAULT 0,
+    sl NUMERIC(20,8) NOT NULL DEFAULT 0,
+    tp NUMERIC(20,8) NOT NULL DEFAULT 0,
+    floating_pnl NUMERIC(18,2) NOT NULL DEFAULT 0,
+    swap NUMERIC(18,2) NOT NULL DEFAULT 0,
+    open_time TIMESTAMPTZ,
+    magic BIGINT NOT NULL DEFAULT 0,
+    comment TEXT NOT NULL DEFAULT '',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(account_id, ticket)
+);
+
+CREATE INDEX IF NOT EXISTS idx_open_positions_acc
+ON open_positions(account_id, open_time DESC);

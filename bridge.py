@@ -34,10 +34,34 @@ def fetch_account_payload():
     margin_free = acc_dict.get('margin_free', 0.0)
     server = acc_dict.get('server', company)
 
-    # Look back 90 days to capture all closed deals and orders
+    # 1. Fetch current live open positions
+    raw_positions = mt5.positions_get() or []
+    positions_payload = []
+    for p in raw_positions:
+        pd = p._asdict()
+        side = 'BUY' if pd.get('type') == 0 else 'SELL'
+        open_time_dt = datetime.fromtimestamp(pd.get('time'), timezone.utc)
+        positions_payload.append({
+            'ticket': pd.get('ticket'),
+            'symbol': pd.get('symbol', ''),
+            'side': side,
+            'volume': float(pd.get('volume', 0)),
+            'open_price': float(pd.get('price_open', 0)),
+            'current_price': float(pd.get('price_current', 0)),
+            'sl': float(pd.get('sl', 0)),
+            'tp': float(pd.get('tp', 0)),
+            'profit': float(pd.get('profit', 0)),
+            'swap': float(pd.get('swap', 0)),
+            'open_time': open_time_dt.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'magic': pd.get('magic', 0),
+            'comment': pd.get('comment', '')
+        })
+
+    # 2. Look back 90 days, AND look forward 2 days to account for broker server timezones (e.g. UTC+2/3)
     from_date = datetime.now(timezone.utc) - timedelta(days=90)
-    deals = mt5.history_deals_get(from_date, datetime.now(timezone.utc)) or []
-    orders = mt5.history_orders_get(from_date, datetime.now(timezone.utc)) or []
+    to_date = datetime.now(timezone.utc) + timedelta(days=2)
+    deals = mt5.history_deals_get(from_date, to_date) or []
+    orders = mt5.history_orders_get(from_date, to_date) or []
 
     pos_entries = {}
     for d in deals:
@@ -132,6 +156,7 @@ def fetch_account_payload():
             'margin': margin,
             'free_margin': margin_free
         },
+        'positions': positions_payload,
         'trades': trades_payload[:1000]
     }
 

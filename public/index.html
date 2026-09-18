@@ -240,6 +240,104 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   font-size:11.5px;color:var(--text-muted);
 }
 
+/* Segmented Control (Apple OS) */
+.segmented-control{
+  display:inline-flex;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);border-radius:12px;
+  padding:3px;gap:3px;
+}
+.seg-btn{
+  background:transparent;border:none;color:var(--text-muted);
+  padding:5px 12px;border-radius:9px;font-size:11.5px;font-weight:700;
+  cursor:pointer;transition:all 0.18s ease;font-family:inherit;
+}
+.seg-btn:hover{color:#fff}
+.seg-btn.active{
+  background:rgba(255,255,255,0.14);color:#fff;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Trading P&L Calendar */
+.cal-nav-row{
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.cal-month-title-grp{display:flex;align-items:center;gap:6px}
+.cal-month-title{margin:0;font-size:15px;font-weight:800;letter-spacing:-0.3px}
+.cal-btn{padding:4px 9px;font-size:11px;min-width:30px}
+.cal-today-btn{padding:4px 9px;font-size:11px;background:rgba(255,255,255,0.08)}
+.cal-stats-row{display:flex;gap:6px;flex-wrap:wrap}
+.cal-stat-pill{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:9px;padding:3px 8px;display:flex;flex-direction:column;
+}
+.cal-stat-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;font-weight:700}
+.cal-stat-val{font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums}
+
+.cal-weekdays-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
+  text-align:center;font-size:10px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;margin-bottom:6px;
+}
+.cal-days-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
+}
+.cal-day-cell{
+  min-height:56px;background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.05);border-radius:11px;
+  padding:5px 6px;display:flex;flex-direction:column;justify-content:space-between;
+  transition:all 0.15s ease;cursor:pointer;position:relative;
+}
+.cal-day-cell:hover{
+  background:rgba(255,255,255,0.06);transform:translateY(-1px);
+  border-color:rgba(255,255,255,0.15);
+}
+.cal-day-cell.other-month{
+  opacity:0.25;cursor:default;
+}
+.cal-day-cell.today{
+  border-color:rgba(10,132,255,0.6);
+}
+.cal-day-cell.selected-day{
+  border-color:var(--apple-blue)!important;
+  box-shadow:0 0 12px rgba(10,132,255,0.35);
+  background:rgba(10,132,255,0.1)!important;
+}
+.cal-day-cell.day-win{
+  background:rgba(48,209,88,0.08);border-color:rgba(48,209,88,0.22);
+}
+.cal-day-cell.day-loss{
+  background:rgba(255,69,58,0.08);border-color:rgba(255,69,58,0.22);
+}
+.cal-day-num{
+  font-size:10.5px;font-weight:700;color:var(--text-muted);line-height:1;
+}
+.cal-day-pnl{
+  font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:3px;
+}
+.cal-day-sub{
+  font-size:9px;color:var(--text-muted);font-weight:600;margin-top:2px;
+}
+.cal-filter-banner{
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.3);
+  border-radius:10px;padding:8px 12px;margin-top:10px;font-size:12px;
+}
+.cal-clear-filter-btn{
+  padding:4px 8px;font-size:11px;background:rgba(255,255,255,0.1);
+}
+
+@keyframes pulseGlow{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:0.5;transform:scale(1.2)}
+}
+.live-pulse{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--apple-green);box-shadow:0 0 8px var(--apple-green);
+  animation:pulseGlow 1.8s infinite ease-in-out;
+}
+
 /* Apple Modal Windows */
 .modal-backdrop{
   position:fixed;top:0;left:0;width:100vw;height:100vh;
@@ -307,6 +405,18 @@ input:focus,select.apple-input:focus{
   .metric-card{padding:12px 14px;border-radius:14px}
   .metric-value{font-size:18px}
   .chart-container{height:210px}
+  
+  /* Mobile Calendar styling */
+  .cal-days-grid{gap:3px}
+  .cal-weekdays-grid{gap:3px;font-size:9px}
+  .cal-day-cell{min-height:48px;padding:3px 4px;border-radius:8px}
+  .cal-day-num{font-size:9.5px}
+  .cal-day-pnl{font-size:10px}
+  .cal-day-sub{display:none}
+  .cal-stat-pill{padding:2px 6px}
+  .cal-stat-lbl{font-size:8px}
+  .cal-stat-val{font-size:10.5px}
+  .cal-nav-row{gap:6px}
   
   /* iOS Bottom Sheet style modal on mobile */
   .modal-backdrop{
@@ -418,15 +528,64 @@ input:focus,select.apple-input:focus{
       </div>
     </section>
 
-    <!-- Chart + Account Card -->
+    <!-- Chart + Calendar + Account Card -->
     <section class="main-grid">
       <div class="glass">
         <div class="chart-header">
-          <div class="chart-title">Net Cumulative Performance</div>
+          <!-- Segmented Control: Chart vs Calendar -->
+          <div class="segmented-control">
+            <button class="seg-btn active" id="viewChartBtn" onclick="switchPerformanceView('chart')">📈 Equity Curve</button>
+            <button class="seg-btn" id="viewCalendarBtn" onclick="switchPerformanceView('calendar')">📅 P&L Calendar</button>
+          </div>
           <div style="font-size:11.5px;color:var(--text-muted)" id="chartTradesCount"></div>
         </div>
-        <div class="chart-container">
+
+        <!-- View 1: Chart Container -->
+        <div class="chart-container" id="chartViewBox">
           <canvas id="equityChart"></canvas>
+        </div>
+
+        <!-- View 2: Trading Calendar Container -->
+        <div id="calendarViewBox" class="hidden">
+          <!-- Calendar Header & Navigation -->
+          <div class="cal-nav-row">
+            <div class="cal-month-title-grp">
+              <button class="btn btn-icon cal-btn" onclick="prevMonth()" title="Previous Month">◀</button>
+              <h3 class="cal-month-title" id="calMonthTitle">September 2026</h3>
+              <button class="btn btn-icon cal-btn" onclick="nextMonth()" title="Next Month">▶</button>
+              <button class="btn cal-today-btn" onclick="jumpToday()">Today</button>
+            </div>
+            
+            <!-- Month Stats Bar -->
+            <div class="cal-stats-row">
+              <div class="cal-stat-pill">
+                <span class="cal-stat-lbl">Month Net P&L</span>
+                <span class="cal-stat-val val-green" id="calMonthPnl">$0.00</span>
+              </div>
+              <div class="cal-stat-pill">
+                <span class="cal-stat-lbl">Win / Loss Days</span>
+                <span class="cal-stat-val" id="calWinDays">0W / 0L</span>
+              </div>
+              <div class="cal-stat-pill">
+                <span class="cal-stat-lbl">Best Day</span>
+                <span class="cal-stat-val val-green" id="calBestDay">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendar Day of Week Header -->
+          <div class="cal-weekdays-grid">
+            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div class="cal-days-grid" id="calDaysGrid"></div>
+
+          <!-- Day Filter Active Alert -->
+          <div id="calFilterBanner" class="cal-filter-banner hidden">
+            <span id="calFilterText">Showing deals for Sep 18, 2026</span>
+            <button class="btn cal-clear-filter-btn" onclick="clearDayFilter()">✕ Clear Filter</button>
+          </div>
         </div>
       </div>
 
@@ -450,11 +609,46 @@ input:focus,select.apple-input:focus{
       </div>
     </section>
 
+    <!-- Live Active Open Positions Section -->
+    <section class="glass" id="openPositionsSection" style="margin-bottom:14px">
+      <div class="table-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="live-pulse"></span>
+          <span style="font-size:14px;font-weight:700">Open Positions</span>
+          <span class="account-badge badge-live" id="openPositionsBadge">0 Open</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">Live market trades</div>
+      </div>
+
+      <!-- Desktop Open Positions Table -->
+      <div class="table-wrap desktop-only" id="openPositionsTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket</th><th>Open Time</th><th>Symbol</th><th>Side</th>
+              <th>Lots</th><th>Open Price</th><th>Current Price</th><th>SL</th><th>TP</th>
+              <th>Floating P&L</th><th>Swap</th>
+            </tr>
+          </thead>
+          <tbody id="openPositionsTbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Open Positions Cards -->
+      <div class="mobile-deals-list" id="openPositionsMobileList"></div>
+    </section>
+
     <!-- Trade History: Desktop Table & Mobile Deals Feed -->
     <section class="glass">
       <div class="table-header">
-        <div style="font-size:14px;font-weight:700">Recent Deals</div>
-        <div style="font-size:11px;color:var(--text-muted)">Synced from MT5</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:14px;font-weight:700">Recent Deals</span>
+          <div id="dealsFilterChip" class="hidden" style="display:inline-flex;align-items:center;gap:6px;background:rgba(10,132,255,0.14);border:1px solid rgba(10,132,255,0.3);padding:3px 9px;border-radius:8px;font-size:11px;color:var(--apple-blue)">
+            <span id="dealsFilterChipText">Filtered by date</span>
+            <span style="cursor:pointer;font-weight:bold" onclick="clearDayFilter()">✕</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)" id="dealsSubtitle">Synced from MT5</div>
       </div>
 
       <!-- Desktop Table (>= 768px) -->
@@ -660,6 +854,11 @@ let accounts = [];
 let selectedAccountId = null;
 let chart = null;
 let latestCreatedToken = "";
+let allTrades = [];
+let allPositions = [];
+let currentCalDate = new Date();
+let selectedFilterDay = null;
+let currentPerformanceView = 'chart';
 
 const $ = id => document.getElementById(id);
 const money = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n||0));
@@ -954,6 +1153,341 @@ function formatPrice(val) {
   return n.toFixed(2);
 }
 
+function switchPerformanceView(view) {
+  currentPerformanceView = view;
+  const chartBtn = $("viewChartBtn");
+  const calBtn = $("viewCalendarBtn");
+  const chartBox = $("chartViewBox");
+  const calBox = $("calendarViewBox");
+
+  if (view === "chart") {
+    chartBtn.classList.add("active");
+    calBtn.classList.remove("active");
+    chartBox.classList.remove("hidden");
+    calBox.classList.add("hidden");
+  } else {
+    calBtn.classList.add("active");
+    chartBtn.classList.remove("active");
+    calBox.classList.remove("hidden");
+    chartBox.classList.add("hidden");
+    renderCalendar(allTrades);
+  }
+}
+
+function prevMonth() {
+  currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() - 1, 1);
+  renderCalendar(allTrades);
+}
+
+function nextMonth() {
+  currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() + 1, 1);
+  renderCalendar(allTrades);
+}
+
+function jumpToday() {
+  currentCalDate = new Date();
+  renderCalendar(allTrades);
+}
+
+function handleDayClick(dateKey) {
+  if (selectedFilterDay === dateKey) {
+    clearDayFilter();
+    return;
+  }
+  selectedFilterDay = dateKey;
+  renderCalendar(allTrades);
+  renderDealsTable(allTrades);
+}
+
+function clearDayFilter() {
+  selectedFilterDay = null;
+  renderCalendar(allTrades);
+  renderDealsTable(allTrades);
+}
+
+function getTradeDateKey(dateInput) {
+  if (!dateInput) return null;
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function renderOpenPositions(positions) {
+  const list = Array.isArray(positions) ? positions : [];
+  const badge = $("openPositionsBadge");
+  const tbody = $("openPositionsTbody");
+  const mobileList = $("openPositionsMobileList");
+
+  if (badge) {
+    badge.textContent = list.length === 1 ? "1 Open" : `${list.length} Open`;
+    badge.className = "account-badge " + (list.length > 0 ? "badge-live" : "badge-pending");
+  }
+
+  if (list.length === 0) {
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="11" style="text-align:center;padding:24px 16px;color:var(--text-muted);font-size:12.5px">
+            No active positions in the market right now. Live trades appear automatically here when opened.
+          </td>
+        </tr>`;
+    }
+    if (mobileList) {
+      mobileList.innerHTML = `
+        <div style="text-align:center;padding:20px 16px;color:var(--text-muted);font-size:12px">
+          No active market positions right now.
+        </div>`;
+    }
+    return;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = list.map(p => {
+      const floating = Number(p.floating_pnl || 0);
+      const isProfit = floating >= 0;
+      return `
+        <tr>
+          <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace">${escapeHtml(p.ticket)}</td>
+          <td style="color:var(--text-muted)">${formatTradeDate(p.open_time)}</td>
+          <td><b style="color:#fff">${escapeHtml(p.symbol)}</b></td>
+          <td><span class="side-pill ${p.side === "BUY" ? "side-buy" : "side-sell"}">${p.side}</span></td>
+          <td>${Number(p.volume || 0).toFixed(2)}</td>
+          <td>${formatPrice(p.open_price)}</td>
+          <td><b style="color:var(--apple-blue)">${formatPrice(p.current_price)}</b></td>
+          <td style="color:var(--text-muted)">${formatPrice(p.sl)}</td>
+          <td style="color:var(--text-muted)">${formatPrice(p.tp)}</td>
+          <td class="${isProfit ? "val-green" : "val-red"}" style="font-weight:800;font-variant-numeric:tabular-nums">
+            ${isProfit ? "+" : ""}${money(floating)}
+          </td>
+          <td style="color:var(--text-muted)">${money(p.swap || 0)}</td>
+        </tr>`;
+    }).join("");
+  }
+
+  if (mobileList) {
+    mobileList.innerHTML = list.map(p => {
+      const floating = Number(p.floating_pnl || 0);
+      const isProfit = floating >= 0;
+      return `
+        <div class="mobile-deal-card" style="border-left:3px solid ${isProfit ? "var(--apple-green)" : "var(--apple-red)"}">
+          <div class="deal-row-top">
+            <div class="deal-symbol-grp">
+              <span class="live-pulse" style="margin-right:2px"></span>
+              <span class="deal-symbol">${escapeHtml(p.symbol)}</span>
+              <span class="side-pill ${p.side === "BUY" ? "side-buy" : "side-sell"}">${p.side} ${Number(p.volume || 0).toFixed(2)}</span>
+            </div>
+            <span class="deal-pnl ${isProfit ? "val-green" : "val-red"}" style="font-weight:800">
+              ${isProfit ? "+" : ""}${money(floating)}
+            </span>
+          </div>
+          <div class="deal-row-bottom">
+            <span>Opened ${formatTradeDate(p.open_time)}</span>
+            <span>${formatPrice(p.open_price)} → <b style="color:var(--apple-blue)">${formatPrice(p.current_price)}</b></span>
+          </div>
+        </div>`;
+    }).join("");
+  }
+}
+
+function renderCalendar(trades) {
+  const tradeList = Array.isArray(trades) ? trades : [];
+  const dayMap = {};
+
+  tradeList.forEach(t => {
+    const key = getTradeDateKey(t.close_time);
+    if (!key) return;
+    if (!dayMap[key]) dayMap[key] = { pnl: 0, trades: 0, wins: 0, losses: 0 };
+    const n = net(t);
+    dayMap[key].pnl += n;
+    dayMap[key].trades += 1;
+    if (n > 0) dayMap[key].wins += 1;
+    else if (n < 0) dayMap[key].losses += 1;
+  });
+
+  const year = currentCalDate.getFullYear();
+  const month = currentCalDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  const startOffset = (firstDay.getDay() + 6) % 7; // Monday-first
+
+  $("calMonthTitle").textContent = currentCalDate.toLocaleString("default", { month: "long", year: "numeric" });
+
+  let monthNetPnl = 0;
+  let winDays = 0;
+  let lossDays = 0;
+  let bestDay = 0;
+  let hasTradingDay = false;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mStr = String(month + 1).padStart(2, "0");
+    const dStr = String(d).padStart(2, "0");
+    const key = `${year}-${mStr}-${dStr}`;
+    if (dayMap[key]) {
+      const p = dayMap[key].pnl;
+      monthNetPnl += p;
+      if (p > 0) winDays++;
+      else if (p < 0) lossDays++;
+      if (!hasTradingDay || p > bestDay) bestDay = p;
+      hasTradingDay = true;
+    }
+  }
+
+  const monthPnlEl = $("calMonthPnl");
+  monthPnlEl.textContent = (monthNetPnl >= 0 ? "+" : "") + money(monthNetPnl);
+  monthPnlEl.className = "cal-stat-val " + (monthNetPnl >= 0 ? "val-green" : "val-red");
+
+  $("calWinDays").textContent = `${winDays}W / ${lossDays}L`;
+
+  const bestDayEl = $("calBestDay");
+  bestDayEl.textContent = hasTradingDay ? ((bestDay >= 0 ? "+" : "") + money(bestDay)) : "$0.00";
+  bestDayEl.className = "cal-stat-val " + (bestDay >= 0 ? "val-green" : "val-red");
+
+  const todayKey = getTradeDateKey(new Date());
+  let cellsHtml = "";
+
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const dayNum = prevMonthDays - i;
+    cellsHtml += `<div class="cal-day-cell other-month"><span class="cal-day-num">${dayNum}</span></div>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mStr = String(month + 1).padStart(2, "0");
+    const dStr = String(d).padStart(2, "0");
+    const key = `${year}-${mStr}-${dStr}`;
+    const dayData = dayMap[key];
+    const isToday = key === todayKey;
+    const isSelected = selectedFilterDay === key;
+
+    let dayClass = "cal-day-cell";
+    if (isToday) dayClass += " today";
+    if (isSelected) dayClass += " selected-day";
+
+    let contentHtml = `<span class="cal-day-num">${d}</span>`;
+    if (dayData && dayData.trades > 0) {
+      const isProfit = dayData.pnl >= 0;
+      dayClass += isProfit ? " day-win" : " day-loss";
+      const pnlSign = isProfit ? "+" : "";
+      contentHtml += `
+        <div class="cal-day-pnl ${isProfit ? "val-green" : "val-red"}">
+          ${pnlSign}${money(dayData.pnl)}
+        </div>
+        <div class="cal-day-sub">${dayData.trades} ${dayData.trades === 1 ? "deal" : "deals"}</div>
+      `;
+    }
+
+    cellsHtml += `<div class="${dayClass}" onclick="handleDayClick('${key}')">${contentHtml}</div>`;
+  }
+
+  const totalCells = startOffset + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    cellsHtml += `<div class="cal-day-cell other-month"><span class="cal-day-num">${i}</span></div>`;
+  }
+  $("calDaysGrid").innerHTML = cellsHtml;
+
+  const banner = $("calFilterBanner");
+  const bannerText = $("calFilterText");
+  if (selectedFilterDay) {
+    const d = new Date(selectedFilterDay + "T12:00:00");
+    const formatted = d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    const dayTrades = tradeList.filter(t => getTradeDateKey(t.close_time) === selectedFilterDay);
+    bannerText.textContent = `Showing deals for ${formatted} (${dayTrades.length} ${dayTrades.length === 1 ? "deal" : "deals"})`;
+    banner.classList.remove("hidden");
+  } else {
+    banner.classList.add("hidden");
+  }
+}
+
+function renderDealsTable(trades) {
+  const tradeList = Array.isArray(trades) ? trades : [];
+  let displayTrades = tradeList;
+
+  const chip = $("dealsFilterChip");
+  const chipText = $("dealsFilterChipText");
+  const dealsSubtitle = $("dealsSubtitle");
+
+  if (selectedFilterDay) {
+    displayTrades = tradeList.filter(t => getTradeDateKey(t.close_time) === selectedFilterDay);
+    const d = new Date(selectedFilterDay + "T12:00:00");
+    const formatted = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    chipText.textContent = `${formatted} (${displayTrades.length})`;
+    chip.classList.remove("hidden");
+    dealsSubtitle.textContent = `Filtered to ${formatted}`;
+  } else {
+    chip.classList.add("hidden");
+    dealsSubtitle.textContent = "Synced from MT5";
+  }
+
+  // Render Desktop Table
+  if (displayTrades.length > 0) {
+    $("tbody").innerHTML = displayTrades.map(t => `
+      <tr>
+        <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace">${escapeHtml(t.ticket)}</td>
+        <td style="color:var(--text-muted)">${formatTradeDate(t.close_time)}</td>
+        <td><b style="color:#fff">${escapeHtml(t.symbol)}</b></td>
+        <td><span class="side-pill ${t.side === "BUY" ? "side-buy" : "side-sell"}">${t.side}</span></td>
+        <td>${Number(t.volume || 0).toFixed(2)}</td>
+        <td>${formatPrice(t.entry_price)}</td>
+        <td>${formatPrice(t.exit_price)}</td>
+        <td style="color:var(--text-muted)">${formatPrice(t.sl)}</td>
+        <td style="color:var(--text-muted)">${formatPrice(t.tp)}</td>
+        <td>${Number(t.rr || 0).toFixed(2)}R</td>
+        <td class="${net(t) >= 0 ? "val-green" : "val-red"}" style="font-weight:700">${money(net(t))}</td>
+        <td style="color:var(--text-muted);font-size:11px">${escapeHtml(t.close_reason || "")}</td>
+      </tr>`).join("");
+  } else {
+    if (selectedFilterDay) {
+      $("tbody").innerHTML = `
+        <tr>
+          <td colspan="12" style="text-align:center;padding:36px 16px;color:var(--text-muted);font-size:13px">
+            <div style="font-size:24px;margin-bottom:6px">📅</div>
+            <div style="font-weight:600;color:var(--text);margin-bottom:4px">No deals recorded on ${selectedFilterDay}</div>
+            <button class="btn btn-sm" style="margin-top:8px" onclick="clearDayFilter()">View All Deals</button>
+          </td>
+        </tr>`;
+    } else {
+      $("tbody").innerHTML = `
+        <tr>
+          <td colspan="12" style="text-align:center;padding:36px 16px;color:var(--text-muted);font-size:13px">
+            <div style="font-size:24px;margin-bottom:6px">📭</div>
+            <div style="font-weight:600;color:var(--text);margin-bottom:4px">No closed deals found for this account yet</div>
+            <div style="font-size:11.5px;color:var(--text-sub)">Trades will automatically display here when closed in MetaTrader 5.</div>
+          </td>
+        </tr>`;
+    }
+  }
+
+  // Render Mobile Deals Feed
+  if (displayTrades.length > 0) {
+    $("mobileDealsList").innerHTML = displayTrades.slice(0, 100).map(t => `
+      <div class="mobile-deal-card">
+        <div class="deal-row-top">
+          <div class="deal-symbol-grp">
+            <span class="deal-symbol">${escapeHtml(t.symbol)}</span>
+            <span class="side-pill ${t.side === "BUY" ? "side-buy" : "side-sell"}">${t.side} ${Number(t.volume || 0).toFixed(2)}</span>
+          </div>
+          <span class="deal-pnl ${net(t) >= 0 ? "val-green" : "val-red"}">${net(t) >= 0 ? "+" : ""}${money(net(t))}</span>
+        </div>
+        <div class="deal-row-bottom">
+          <span>${formatTradeDate(t.close_time)}</span>
+          <span>${formatPrice(t.entry_price)} → ${formatPrice(t.exit_price)} ${Number(t.rr || 0) > 0 ? '(' + Number(t.rr).toFixed(1) + 'R)' : ''}</span>
+        </div>
+      </div>
+    `).join("");
+  } else {
+    $("mobileDealsList").innerHTML = `
+      <div style="text-align:center;padding:32px 16px;color:var(--text-muted);font-size:13px">
+        <div style="font-size:24px;margin-bottom:6px">📭</div>
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">${selectedFilterDay ? "No deals on selected day" : "No closed deals found yet"}</div>
+        ${selectedFilterDay ? '<button class="btn btn-sm" style="margin-top:8px" onclick="clearDayFilter()">View All Deals</button>' : '<div style="font-size:11.5px;color:var(--text-sub)">Trades will automatically display here when closed in MetaTrader 5.</div>'}
+      </div>`;
+  }
+}
+
 async function loadDashboard(){
   if(!selectedAccountId) return;
   const tbody = $("tbody");
@@ -977,6 +1511,10 @@ function render(data){
   const account = data.account || {};
   const s = data.snapshot || {};
   const trades = Array.isArray(data.trades) ? data.trades : [];
+  const positions = Array.isArray(data.positions) ? data.positions : [];
+
+  allTrades = trades;
+  allPositions = positions;
 
   $("balance").textContent = money(s.balance);
   $("equity").textContent = money(s.equity);
@@ -1027,66 +1565,17 @@ function render(data){
   $("cardSync").textContent = formatTimeOnly(s.updated_at);
   $("updatedTimestamp").textContent = s.updated_at ? ("Updated " + formatDateTime(s.updated_at)) : "Waiting for MT5 sync...";
 
-  // Render Desktop Table
-  if (trades.length > 0) {
-    $("tbody").innerHTML = trades.map(t => `
-      <tr>
-        <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace">${escapeHtml(t.ticket)}</td>
-        <td style="color:var(--text-muted)">${formatTradeDate(t.close_time)}</td>
-        <td><b style="color:#fff">${escapeHtml(t.symbol)}</b></td>
-        <td><span class="side-pill ${t.side === "BUY" ? "side-buy" : "side-sell"}">${t.side}</span></td>
-        <td>${Number(t.volume || 0).toFixed(2)}</td>
-        <td>${formatPrice(t.entry_price)}</td>
-        <td>${formatPrice(t.exit_price)}</td>
-        <td style="color:var(--text-muted)">${formatPrice(t.sl)}</td>
-        <td style="color:var(--text-muted)">${formatPrice(t.tp)}</td>
-        <td>${Number(t.rr || 0).toFixed(2)}R</td>
-        <td class="${net(t) >= 0 ? "val-green" : "val-red"}" style="font-weight:700">${money(net(t))}</td>
-        <td style="color:var(--text-muted);font-size:11px">${escapeHtml(t.close_reason || "")}</td>
-      </tr>`).join("");
-  } else {
-    $("tbody").innerHTML = `
-      <tr>
-        <td colspan="12" style="text-align:center;padding:36px 16px;color:var(--text-muted);font-size:13px">
-          <div style="font-size:24px;margin-bottom:6px">📭</div>
-          <div style="font-weight:600;color:var(--text);margin-bottom:4px">No closed deals found for this account yet</div>
-          <div style="font-size:11.5px;color:var(--text-sub)">Trades will automatically display here when closed in MetaTrader 5.</div>
-        </td>
-      </tr>
-    `;
-  }
-
-  // Render Mobile Deals Cards (show up to 100 on mobile)
-  if (trades.length > 0) {
-    $("mobileDealsList").innerHTML = trades.slice(0, 100).map(t => `
-      <div class="mobile-deal-card">
-        <div class="deal-row-top">
-          <div class="deal-symbol-grp">
-            <span class="deal-symbol">${escapeHtml(t.symbol)}</span>
-            <span class="side-pill ${t.side === "BUY" ? "side-buy" : "side-sell"}">${t.side} ${Number(t.volume || 0).toFixed(2)}</span>
-          </div>
-          <span class="deal-pnl ${net(t) >= 0 ? "val-green" : "val-red"}">${net(t) >= 0 ? "+" : ""}${money(net(t))}</span>
-        </div>
-        <div class="deal-row-bottom">
-          <span>${formatTradeDate(t.close_time)}</span>
-          <span>${formatPrice(t.entry_price)} → ${formatPrice(t.exit_price)} ${Number(t.rr || 0) > 0 ? '(' + Number(t.rr).toFixed(1) + 'R)' : ''}</span>
-        </div>
-      </div>
-    `).join("");
-  } else {
-    $("mobileDealsList").innerHTML = `
-      <div style="text-align:center;padding:32px 16px;color:var(--text-muted);font-size:13px">
-        <div style="font-size:24px;margin-bottom:6px">📭</div>
-        <div style="font-weight:600;color:var(--text);margin-bottom:4px">No closed deals found yet</div>
-        <div style="font-size:11.5px;color:var(--text-sub)">Trades will automatically display here when closed in MetaTrader 5.</div>
-      </div>
-    `;
-  }
-
+  renderOpenPositions(positions);
+  renderDealsTable(trades);
+  renderCalendar(trades);
   renderChart(trades);
 }
 
 function renderEmpty(){
+  allTrades = [];
+  allPositions = [];
+  selectedFilterDay = null;
+
   $("balance").textContent = "$0.00";
   $("equity").textContent = "$0.00";
   $("todayPnl").textContent = "$0.00";
@@ -1096,16 +1585,10 @@ function renderEmpty(){
   $("avgRR").className = "metric-value";
   $("tradeCount").textContent = "0";
   $("chartTradesCount").textContent = "";
-  $("tbody").innerHTML = `
-    <tr>
-      <td colspan="12" style="text-align:center;padding:36px 16px;color:var(--text-muted);font-size:13px">
-        <div style="font-size:24px;margin-bottom:6px">📭</div>
-        <div style="font-weight:600;color:var(--text);margin-bottom:4px">No accounts connected</div>
-        <div style="font-size:11.5px;color:var(--text-sub)">Click "+ Add" or "⚡ Auto-Detect" to connect your MT5 account.</div>
-      </td>
-    </tr>
-  `;
-  $("mobileDealsList").innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px">No accounts connected</div>';
+
+  renderOpenPositions([]);
+  renderDealsTable([]);
+  renderCalendar([]);
   renderChart([]);
 }
 

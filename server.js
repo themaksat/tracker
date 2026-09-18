@@ -397,9 +397,18 @@ app.get("/api/accounts/:id/dashboard", requireAuth, async (req, res) => {
       [accountId]
     );
 
+    const openPositions = await pool.query(
+      `SELECT ticket, symbol, side, volume, open_price, current_price, sl, tp, floating_pnl, swap, open_time, comment
+       FROM open_positions
+       WHERE account_id=$1
+       ORDER BY open_time DESC`,
+      [accountId]
+    ).catch(() => ({ rows: [] }));
+
     res.json({
       account: owner.rows[0],
       snapshot: snapshot.rows[0] || null,
+      positions: openPositions.rows,
       trades: trades.rows
     });
 
@@ -436,6 +445,7 @@ app.post("/api/mt5/ingest", async (req, res) => {
     let accountId = accResult.rows[0].id;
     const account = req.body.account || {};
     const snapshot = req.body.snapshot || {};
+    const positions = Array.isArray(req.body.positions) ? req.body.positions : [];
     const trades = Array.isArray(req.body.trades) ? req.body.trades : [];
 
     // If payload specifies a login, route to that user's matching account
@@ -479,6 +489,50 @@ app.post("/api/mt5/ingest", async (req, res) => {
         Number(snapshot.free_margin || 0)
       ]
     );
+
+    // Sync active open positions
+    try {
+      await client.query("DELETE FROM open_positions WHERE account_id=$1", [accountId]);
+      for (const p of positions) {
+        await client.query(
+          `INSERT INTO open_positions(
+            account_id,ticket,symbol,side,volume,open_price,current_price,sl,tp,floating_pnl,swap,open_time,magic,comment,updated_at
+          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,NOW())
+          ON CONFLICT(account_id,ticket) DO UPDATE SET
+            symbol=EXCLUDED.symbol,
+            side=EXCLUDED.side,
+            volume=EXCLUDED.volume,
+            open_price=EXCLUDED.open_price,
+            current_price=EXCLUDED.current_price,
+            sl=EXCLUDED.sl,
+            tp=EXCLUDED.tp,
+            floating_pnl=EXCLUDED.floating_pnl,
+            swap=EXCLUDED.swap,
+            open_time=EXCLUDED.open_time,
+            magic=EXCLUDED.magic,
+            comment=EXCLUDED.comment,
+            updated_at=NOW()`,
+          [
+            accountId,
+            Number(p.ticket || 0),
+            String(p.symbol || ''),
+            String(p.side || 'BUY').toUpperCase() === 'SELL' ? 'SELL' : 'BUY',
+            Number(p.volume || 0),
+            Number(p.open_price || 0),
+            Number(p.current_price || 0),
+            Number(p.sl || 0),
+            Number(p.tp || 0),
+            Number(p.profit || 0),
+            Number(p.swap || 0),
+            p.open_time || null,
+            Number(p.magic || 0),
+            String(p.comment || '')
+          ]
+        );
+      }
+    } catch (pe) {
+      console.error("Open positions sync error:", pe.message);
+    }
 
     if (trades.length > 0) {
       const batchSize = 100;
